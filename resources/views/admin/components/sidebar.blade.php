@@ -47,6 +47,18 @@
                                 </ul>
                             </li>
                         @endcanany
+                        @canany(['manage-product-categories', 'manage-products'])
+                            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Products</a>
+                                <ul class="" aria-expanded="false">
+                                    @can('manage-product-categories')
+                                        <li><a href="{{ route('product-categories.index') }}">Product category</a></li>
+                                    @endcan
+                                    @can('manage-products')
+                                        <li><a href="{{ route('products.index') }}">Product Details</a></li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endcanany
 
                         @canany(['manage-slider', 'manage-about', 'manage-why-choose-us', 'manage-accreditations',
                         'manage-gallery', 'manage-testimonials'])
@@ -54,14 +66,13 @@
                             <ul aria-expanded="false">
                                 <li><a href="{{ route('sliderimage.index') }}">Slider</a></li>
                                 <li><a href="{{ route('about-section.index') }}">About Us</a></li>
-                                <li><a href="{{ route('act-about-section.index') }}"> About Act Section</a></li>
-                                <li><a href="{{ route('how-works.index') }}">How We Works</a></li>
-                                <li><a href="{{ route('whychoose-section.index') }}">Why Choose Us</a></li>
-                                <li><a href="{{ route('about-two-section.index') }}">About Two </a></li>
-                                <li><a href="{{ route('case-study.index') }}">Case Study</a></li>
-                                <li><a href="{{ route('network.index') }}">Network Section</a></li>
-                               
-                              
+                                {{-- <li><a href="{{ route('act-about-section.index') }}"> About Act Section</a></li> --}}
+                                {{-- <li><a href="{{ route('how-works.index') }}">How We Works</a></li> --}}
+                                {{-- <li><a href="{{ route('whychoose-section.index') }}">Why Choose Us</a></li> --}}
+                                {{-- <li><a href="{{ route('about-two-section.index') }}">About Two </a></li> --}}
+                                {{-- <li><a href="{{ route('case-study.index') }}">Case Study</a></li> --}}
+                                <li><a href="{{ route('services.index') }}">Service Section</a></li>
+                                <li><a href="{{ route('counters-section.index') }}">Counter Section</a></li>
                                
 
                             </ul>
@@ -74,7 +85,7 @@
                                
                             </ul>
                         </li>
-                         <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Commitment Page</a>
+                         {{-- <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Commitment Page</a>
                             <ul aria-expanded="false">
                                 <li><a href="{{ route('commitment-one.index') }}">Commitment 1</a></li>
                                 <li><a href="{{ route('commitment-two.index') }}">Commitment 2</a></li>
@@ -82,15 +93,15 @@
                                 <li><a href="{{ route('commitment-four.index') }}">Commitment 4</a></li>
                                
                             </ul>
-                        </li>
+                        </li> --}}
 
-                        @can('manage-job-career')
+                        {{-- @can('manage-job-career')
                             <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Job Career</a>
                                 <ul aria-expanded="false">
                                     <li><a href="{{ route('jobcareer.index') }}">Add Vacancy</a></li>
                                 </ul>
                             </li>
-                        @endcan
+                        @endcan --}}
 
                         @can('manage-partner-images')
                             <li><a href="{{ route('partners.index') }}" aria-expanded="false">Partners</a></li>
@@ -102,9 +113,9 @@
                             <li><a href="{{ route('faqs.index') }}" aria-expanded="false">Faq</a></li>
                         @endcan
                        
-                            <li><a class="" href="{{ route('client-resources.index') }}" aria-expanded="false">Client Resources</a></li>
+                            {{-- <li><a class="" href="{{ route('client-resources.index') }}" aria-expanded="false">Client Resources</a></li>
                             <li><a class="" href="{{ route('staff-resources.index') }}" aria-expanded="false">Staff Resources</a></li>
-                       
+                        --}}
                         @can('manage-privacy-policy')
                             <li><a class="" href="{{ route('admin-privacy-policy.index') }}" aria-expanded="false">Privacy
                                     Policy</a></li>
@@ -120,7 +131,7 @@
             {{-- for who we serve --}}
          
             
-            <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+            {{-- <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
                     <i class="flaticon-381-briefcase"></i>  
                     <span class="nav-text">Who we Serve</span>
                 </a>
@@ -145,8 +156,8 @@
 
 
                 </ul>
-            </li>
-            <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+            </li> --}}
+            {{-- <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
                     <i class="flaticon-381-settings"></i>
                     <span class="nav-text"> Our Services</span>
                 </a>
@@ -224,7 +235,7 @@
                     </li>
 
                 </ul>
-            </li>
+            </li> --}}
 
             @can('manage-profile')
                 <li><a href="{{ route('profile') }}" class="ai-icon" aria-expanded="false">

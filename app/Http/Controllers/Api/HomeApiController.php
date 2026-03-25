@@ -12,9 +12,10 @@ use App\Models\HowWork;
 use App\Models\WhyChooseSection;
 use App\Models\Abouttwo;
 use App\Models\CaseStudy;
-use App\Models\Network;
+use App\Models\ServicesSection;
 use App\Models\Testimonials;
 use App\Models\Blog;
+use App\Models\Partner;
 
 
 class HomeApiController extends Controller
@@ -27,7 +28,7 @@ class HomeApiController extends Controller
     public function index()
     {
         $howWork = HowWork::first();
-        $network = Network::first();
+        $service = ServicesSection::first();
         $testimonials = Testimonials::where('status', 'active')->get();
         $caseStudiesQuery = CaseStudy::where(function ($q) {
             $q->where('status', 'active')
@@ -72,6 +73,11 @@ class HomeApiController extends Controller
 
 
             'slider' => SliderImage::where('status', 'active')
+                ->get()
+                ->map(fn($item) => [
+                    'image' => asset('storage/' . $item->image),
+                ]),
+            'partner' => Partner::where('status', 'active')
                 ->get()
                 ->map(fn($item) => [
                     'image' => asset('storage/' . $item->image),
@@ -154,33 +160,29 @@ class HomeApiController extends Controller
 
 
 
-            'network' => $network ? [
-                'sub_title' => $network->sub_title,
-                'main_title' => $network->main_title,
+            'service' => $service ? [
+                'sub_title' => $service->subtitle,
+                'main_title' => $service->main_heading,
 
+                'cards' => !empty($service->service_items) ? array_map(function ($item) {
+                    return [
+                        'title' => $item['title'] ?? '',
+                        'description' => $item['description'] ?? '',
+                        'image' => $this->image($item['image'] ?? null),
+                    ];
+                }, $service->service_items) : [],
 
-                'cards' => [
-                    [
-                        'title' => $network->small_card_1_title,
-                        'description' => $network->small_card_1_main_title,
-                        'image' => $this->image($network->small_card_1_image),
-                    ],
-                    [
-                        'title' => $network->small_card_2_title,
-                        'description' => $network->small_card_2_main_title,
-                        'image' => $this->image($network->small_card_2_image),
-                    ],
-                    [
-                        'title' => $network->small_card_3_title,
-                        'description' => $network->small_card_3_main_title,
-                        'image' => $this->image($network->small_card_3_image),
-                    ],
-                    [
-                        'title' => $network->small_card_4_title,
-                        'description' => $network->small_card_4_main_title,
-                        'image' => $this->image($network->small_card_4_image),
-                    ],
-                ]
+                // Active Item Details (Center Content)
+                'active_item' => [
+
+                    'title' => $service->active_item_title,
+                    'description' => $service->active_item_description,
+                    'read_more_link' => $service->read_more_link,
+                ],
+                'icon' => $this->image($service->icon),
+                // Main Image (Right Side Circle)
+                'main_image' => $this->image($service->image),
+
             ] : null,
 
 

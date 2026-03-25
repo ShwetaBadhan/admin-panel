@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\communityNursingApiController;
 use App\Http\Controllers\Api\alliedHealthApiController;
 use App\Http\Controllers\Api\planManagementApiController;
 use App\Http\Controllers\Api\supportCoordinationApiController;
+use App\Http\Controllers\Api\ProductApiController;
 
 
 Route::get('/ping', function () {
@@ -39,6 +40,7 @@ Route::get('/terms-conditions', [TermsApiController::class, 'index']);
 Route::get('/ndis', [NdisApiController::class, 'index']);  
 Route::get('/aged-care', [AgedcareApiController::class, 'index']);  
 Route::get('/blogs', [BlogsApiController::class, 'index']);  
+Route::get('/products', [ProductApiController::class, 'index']);  
 Route::get('/niisq', [NiisqApiController::class, 'index']);  
 Route::get('/dva', [DvaApiController::class, 'index']);  
 Route::get('/client-resource', [ClientResourcesApiController::class, 'index']);  

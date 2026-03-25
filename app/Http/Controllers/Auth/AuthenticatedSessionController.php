@@ -23,8 +23,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    public function store(LoginRequest $request): RedirectResponse
-    {
+  public function store(LoginRequest $request): RedirectResponse
+{
+    // Check if running on localhost
+    $isLocalhost = in_array($request->getHost(), ['localhost', '127.0.0.1', '::1']);
+    
+    // Only verify CAPTCHA if NOT on localhost
+    if (!$isLocalhost) {
         // 1️⃣ Validate Turnstile CAPTCHA
         $request->validate([
             'cf-turnstile-response' => 'required',
@@ -33,7 +38,6 @@ class AuthenticatedSessionController extends Controller
         // 2️⃣ Verify CAPTCHA with Cloudflare
         $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
             'secret' => env('TURNSTILE_SECRET'),
-            // Add your secret in .env
             'response' => $request->input('cf-turnstile-response'),
             'remoteip' => $request->ip(),
         ]);
@@ -42,19 +46,17 @@ class AuthenticatedSessionController extends Controller
         if (!($captchaResult['success'] ?? false)) {
             return back()->withErrors(['captcha' => 'CAPTCHA verification failed.']);
         }
-        //         $captchaResult = $response->json();
-// dd($captchaResult);
-
-
-        // 3️⃣ Attempt authentication
-        $request->authenticate();
-
-        // 4️⃣ Regenerate session to prevent fixation
-        $request->session()->regenerate();
-
-        // 5️⃣ Redirect to intended page or dashboard
-        return redirect()->intended('/dashboard'); // Make sure route /dashboard exists
     }
+
+    // 3️⃣ Attempt authentication
+    $request->authenticate();
+
+    // 4️⃣ Regenerate session to prevent fixation
+    $request->session()->regenerate();
+
+    // 5️⃣ Redirect to intended page or dashboard
+    return redirect()->intended('/dashboard');
+}
 
     /**
      * Destroy an authenticated session.

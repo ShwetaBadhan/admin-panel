@@ -103,7 +103,10 @@ use App\Http\Controllers\CommunitySupportController;
 use App\Http\Controllers\IndependentAccommodationController;
 use App\Http\Controllers\AccommodationGalleryController;
 use App\Http\Controllers\AccomodationFaqController;
-
+use App\Http\Controllers\ProductCategoryController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ServicesSectionController;
+use App\Http\Controllers\CountersSectionController;
 
 Route::get('/', function () {
     return redirect('/admin-panel');
@@ -122,7 +125,23 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
+   // ────────────── Product Details ──────────────
+       Route::get('/product-category', [ProductCategoryController::class, 'index'])->name('product-categories.index');
+     // Store
+    Route::post('/product-categories', [ProductCategoryController::class, 'store'])
+        ->name('product-categories.store');
+    
+    // Update
+    Route::put('/product-categories/{category}', [ProductCategoryController::class, 'update'])
+        ->name('product-categories.update');
+    
+    // Destroy
+    Route::delete('/product-categories/{category}', [ProductCategoryController::class, 'destroy'])
+        ->name('product-categories.destroy');
 
+        Route::resource('products', ProductController::class);
+    Route::delete('products/{product}/remove-image', [ProductController::class, 'removeImage'])
+        ->name('products.remove-image');
 
     // ────────────── Tests Details ──────────────
     Route::get('/tests', [TestController::class, 'index'])->name('admin.pages.test');
@@ -593,6 +612,11 @@ Route::middleware('auth')->group(function () {
     // For How we work
     Route::get('/network', [NetworkController::class, 'index'])->name('network.index');
     Route::put('/network/{section}', [NetworkController::class, 'update'])->name('network.update');
+    // For Services
+    Route::get('/services', [ServicesSectionController::class, 'index'])->name('services.index');
+    Route::put('/services/{section}', [ServicesSectionController::class, 'update'])->name('services.update');
+   Route::get('/counters-section', [CountersSectionController::class, 'index'])->name('counters-section.index');
+Route::put('/counters-section/{section}', [CountersSectionController::class, 'update'])->name('counters-section.update');
     // For Values Sction
     Route::get('/value', [ValueController::class, 'index'])->name('value.index');
     Route::put('/value/{section}', [ValueController::class, 'update'])->name('value.update');
