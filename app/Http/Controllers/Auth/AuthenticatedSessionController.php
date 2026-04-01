@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\View\View;
-
+use Illuminate\Support\Facades\Log;
 class AuthenticatedSessionController extends Controller
 {
     /**
@@ -41,7 +41,11 @@ class AuthenticatedSessionController extends Controller
                 'response' => $request->input('cf-turnstile-response'),
                 'remoteip' => $request->ip(),
             ]);
-
+Log::info('Login Attempt:', [
+    'email' => $request->input('email'),
+    'captcha_token' => $request->input('cf-turnstile-response') ? 'Present' : 'MISSING',
+    'is_localhost' => $isLocalhost,
+]);
             $captchaResult = $response->json();
             if (!($captchaResult['success'] ?? false)) {
                                
