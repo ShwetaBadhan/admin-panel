@@ -68,14 +68,20 @@
             </div>
         </div>
 
-        <!-- Cloudflare Turnstile CAPTCHA -->
-        <div class="mb-4">
-         <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response">
-            <div class="cf-turnstile" data-sitekey="{{ env('TURNSTILE_SITEKEY') }}" data-callback="onCaptchaSuccess">
-            </div>
- <x-input-error :messages="$errors->get('captcha')" class="mt-2 text-danger" />~
-        </div>
-
+        
+       <!-- Cloudflare Turnstile Section -->
+<div class="mb-4">
+    <!-- Hidden input to store the token -->
+    <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response">
+    
+    <!-- Turnstile Widget - Using env() with your exact variable name -->
+    <div class="cf-turnstile" 
+         data-sitekey="{{ env('TURNSTILE_SITEKEY') }}" 
+         data-callback="onCaptchaSuccess"
+         data-expired-callback="onCaptchaExpired">
+    </div>
+    <x-input-error :messages="$errors->get('captcha')" class="mt-2 text-danger" />
+</div>
         <!-- Login Button -->
         <div class="text-center">
             <button type="submit" class="btn btn-primary btn-block" id="loginButton" disabled>
@@ -87,22 +93,30 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-    <script>
-        // Enable the login button after CAPTCHA success
-        function onCaptchaSuccess(token) {
-            document.getElementById('loginButton').disabled = false;
-        }
+  <script>
+    // ✅ Store token when CAPTCHA is solved
+    function onCaptchaSuccess(token) {
+        document.getElementById('cf-turnstile-response').value = token; // 🔥 Critical!
+        document.getElementById('loginButton').disabled = false;
+    }
 
-        const togglePassword = document.getElementById("togglePassword");
-        const password = document.getElementById("password");
-        const icon = togglePassword.querySelector("i");
+    // ✅ Reset if token expires
+    function onCaptchaExpired() {
+        document.getElementById('cf-turnstile-response').value = '';
+        document.getElementById('loginButton').disabled = true;
+        if (window.turnstile) turnstile.reset();
+    }
 
-        togglePassword.addEventListener("click", function() {
-            const isPassword = password.type === "password";
-            password.type = isPassword ? "text" : "password";
+    // Password toggle
+    const togglePassword = document.getElementById("togglePassword");
+    const password = document.getElementById("password");
+    const icon = togglePassword.querySelector("i");
 
-            icon.classList.toggle("bi-eye", !isPassword);
-            icon.classList.toggle("bi-eye-slash", isPassword);
-        });
-    </script>
+    togglePassword.addEventListener("click", function() {
+        const isPassword = password.type === "password";
+        password.type = isPassword ? "text" : "password";
+        icon.classList.toggle("bi-eye", !isPassword);
+        icon.classList.toggle("bi-eye-slash", isPassword);
+    });
+</script>
 </x-guest-layout>

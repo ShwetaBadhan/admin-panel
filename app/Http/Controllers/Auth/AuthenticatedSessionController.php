@@ -12,51 +12,46 @@ use Illuminate\View\View;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
     public function create(): View
     {
-        return view('auth.login'); // Blade view for login page
+        return view('auth.login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
-{
-    $response = Http::asForm()->post(
-        'https://challenges.cloudflare.com/turnstile/v0/siteverify',
-        [
-            'secret'   => config('services.turnstile.secret'),
+    {
+        // Validate CAPTCHA response exists
+        $request->validate([
+            'cf-turnstile-response' => 'required',
+        ]);
+
+        // Verify with Cloudflare - Using env() with your exact variable name
+        $response = Http::timeout(10)->asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+            'secret' => env('TURNSTILE_SECRETKEY'), // ✅ Your exact variable name
             'response' => $request->input('cf-turnstile-response'),
             'remoteip' => $request->ip(),
-        ]
-    );
-
-    if (!($response->json('success'))) {
-        return back()->withErrors([
-            'captcha' => 'CAPTCHA verification failed. Please try again.',
         ]);
+
+        $result = $response->json();
+
+        if (!($result['success'] ?? false)) {
+            return back()
+                ->withErrors(['captcha' => 'CAPTCHA verification failed. Please try again.'])
+                ->withInput();
+        }
+
+        // Authenticate user
+        $request->authenticate();
+        $request->session()->regenerate();
+
+        return redirect()->intended('/dashboard');
     }
 
-    $request->authenticate();
-    $request->session()->regenerate();
-
-    return redirect()->intended('/dashboard');
-}
-
-
-    /**
-     * Destroy an authenticated session.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/'); // Redirect to homepage after logout
+        return redirect('/');
     }
 }
