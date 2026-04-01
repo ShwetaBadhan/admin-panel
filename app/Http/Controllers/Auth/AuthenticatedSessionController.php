@@ -17,44 +17,35 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): View
     {
-        return view('auth.login');
+        return view('auth.login'); // Blade view for login page
     }
 
     /**
      * Handle an incoming authentication request.
      */
     public function store(LoginRequest $request): RedirectResponse
-    {
-        // Validate CAPTCHA response is present
-        $request->validate([
-            'cf-turnstile-response' => 'required',
-        ]);
-
-        // Verify CAPTCHA with Cloudflare Turnstile
-        $response = Http::timeout(10)->asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-            'secret' => config('services.turnstile.secret'),
+{
+    $response = Http::asForm()->post(
+        'https://challenges.cloudflare.com/turnstile/v0/siteverify',
+        [
+            'secret'   => config('services.turnstile.secret'),
             'response' => $request->input('cf-turnstile-response'),
             'remoteip' => $request->ip(),
+        ]
+    );
+
+    if (!($response->json('success'))) {
+        return back()->withErrors([
+            'captcha' => 'CAPTCHA verification failed. Please try again.',
         ]);
-
-        $result = $response->json();
-
-        // Check if CAPTCHA verification succeeded
-        if (!($result['success'] ?? false)) {
-            return back()
-                ->withErrors(['captcha' => 'CAPTCHA verification failed. Please try again.'])
-                ->withInput();
-        }
-
-        // Attempt to authenticate the user
-        $request->authenticate();
-
-        // Regenerate session to prevent fixation attacks
-        $request->session()->regenerate();
-
-        // Redirect to intended page or dashboard
-        return redirect()->intended('/dashboard');
     }
+
+    $request->authenticate();
+    $request->session()->regenerate();
+
+    return redirect()->intended('/dashboard');
+}
+
 
     /**
      * Destroy an authenticated session.
@@ -66,6 +57,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/'); // Redirect to homepage after logout
     }
 }
