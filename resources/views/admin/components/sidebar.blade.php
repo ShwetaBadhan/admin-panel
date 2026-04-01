@@ -78,13 +78,13 @@
                             </ul>
                         </li>
                         @endcanany
-                         <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">About Page</a>
+                         {{-- <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">About Page</a>
                             <ul aria-expanded="false">
                                 <li><a href="{{ route('value.index') }}">Values Section</a></li>
                                 <li><a href="{{ route('about-faqs.index') }}">Faq Section</a></li>
                                
                             </ul>
-                        </li>
+                        </li> --}}
                          {{-- <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Commitment Page</a>
                             <ul aria-expanded="false">
                                 <li><a href="{{ route('commitment-one.index') }}">Commitment 1</a></li>

@@ -60,7 +60,8 @@
             </div>
             <div class="form-group">
                 @if (Route::has('password.request'))
-                    <a class="underline text-sm text-gray-600 hover:text-gray-900" href="{{ route('password.request') }}">
+                    <a class="underline text-sm text-gray-600 hover:text-gray-900"
+                        href="{{ route('password.request') }}">
                         {{ __('Forgot your password?') }}
                     </a>
                 @endif
@@ -95,14 +96,12 @@
         const password = document.getElementById("password");
         const icon = togglePassword.querySelector("i");
 
-        togglePassword.addEventListener("click", function () {
+        togglePassword.addEventListener("click", function() {
             const isPassword = password.type === "password";
             password.type = isPassword ? "text" : "password";
 
             icon.classList.toggle("bi-eye", !isPassword);
             icon.classList.toggle("bi-eye-slash", isPassword);
         });
-
-
     </script>
 </x-guest-layout>

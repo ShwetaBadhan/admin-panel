@@ -20,43 +20,44 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login'); // Blade view for login page
     }
 
-    /**
+   /**
      * Handle an incoming authentication request.
      */
-  public function store(LoginRequest $request): RedirectResponse
-{
-    // Check if running on localhost
-    $isLocalhost = in_array($request->getHost(), ['localhost', '127.0.0.1', '::1']);
-    
-    // Only verify CAPTCHA if NOT on localhost
-    if (!$isLocalhost) {
-        // 1️⃣ Validate Turnstile CAPTCHA
-        $request->validate([
-            'cf-turnstile-response' => 'required',
-        ]);
+    public function store(LoginRequest $request): RedirectResponse
+    {
+        // Check if running on localhost
+        $isLocalhost = in_array($request->getHost(), ['localhost', '127.0.0.1', '::1']);
+        
+        // Only verify CAPTCHA if NOT on localhost
+        if (!$isLocalhost) {
+            // 1️⃣ Validate Turnstile CAPTCHA
+            $request->validate([
+                'cf-turnstile-response' => 'required',
+            ]);
 
-        // 2️⃣ Verify CAPTCHA with Cloudflare
-        $response = Http::asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
-            'secret' => env('TURNSTILE_SECRET'),
-            'response' => $request->input('cf-turnstile-response'),
-            'remoteip' => $request->ip(),
-        ]);
+            // 2️⃣ Verify CAPTCHA with Cloudflare
+            $response = Http::timeout(10)->asForm()->post('https://challenges.cloudflare.com/turnstile/v0/siteverify', [
+                'secret' => config('services.turnstile.secret'), // ✅ Fixed: use config()
+                'response' => $request->input('cf-turnstile-response'),
+                'remoteip' => $request->ip(),
+            ]);
 
-        $captchaResult = $response->json();
-        if (!($captchaResult['success'] ?? false)) {
-            return back()->withErrors(['captcha' => 'CAPTCHA verification failed.']);
+            $captchaResult = $response->json();
+            if (!($captchaResult['success'] ?? false)) {
+                               
+                return back()->withErrors(['captcha' => 'CAPTCHA verification failed.'])->withInput();
+            }
         }
+
+        // 3️⃣ Attempt authentication
+        $request->authenticate();
+
+        // 4️⃣ Regenerate session to prevent fixation
+        $request->session()->regenerate();
+
+        // 5️⃣ Redirect to intended page or dashboard
+        return redirect()->intended('/dashboard');
     }
-
-    // 3️⃣ Attempt authentication
-    $request->authenticate();
-
-    // 4️⃣ Regenerate session to prevent fixation
-    $request->session()->regenerate();
-
-    // 5️⃣ Redirect to intended page or dashboard
-    return redirect()->intended('/dashboard');
-}
 
     /**
      * Destroy an authenticated session.
@@ -68,6 +69,6 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/'); // Redirect to homepage after logout
+        return redirect('/');
     }
 }

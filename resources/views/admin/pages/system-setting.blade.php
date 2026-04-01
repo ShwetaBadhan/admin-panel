@@ -91,7 +91,35 @@
                                         @endif
                                     </div>
                                 </div>
-
+ <!-- Cover Image Field -->
+    <div class="form-group mb-3">
+        <label for="cover_image">Cover Image</label>
+        <div class="row">
+            <div class="col-md-6">
+                <input type="file" 
+                       name="cover_image" 
+                       id="cover_image" 
+                       class="form-control @error('cover_image') is-invalid @enderror"
+                       accept="image/*">
+                @error('cover_image')
+                    <span class="invalid-feedback">{{ $message }}</span>
+                @enderror
+                <small class="text-muted">Recommended: 1920x600px, max 2MB</small>
+            </div>
+            
+            <!-- Preview Current Cover -->
+            @if($setting?->cover_image)
+                <div class="col-md-6 text-end">
+                    <img src="{{ asset('storage/' . $setting->cover_image) }}" 
+                         alt="Current Cover"
+                         class="img-thumbnail"
+                         style="max-height: 100px;">
+                    <br>
+                    <small>Current cover image</small>
+                </div>
+            @endif
+        </div>
+    </div>
                                 <!-- Helpdesk Number -->
                                 <div class="row mb-4">
                                     <div class="col-lg-6">

@@ -16,6 +16,7 @@ use App\Models\ServicesSection;
 use App\Models\Testimonials;
 use App\Models\Blog;
 use App\Models\Partner;
+use App\Models\Setting;
 
 
 class HomeApiController extends Controller
@@ -28,6 +29,7 @@ class HomeApiController extends Controller
     public function index()
     {
         $howWork = HowWork::first();
+        $settings = Setting::first();
         $service = ServicesSection::first();
         $testimonials = Testimonials::where('status', 'active')->get();
         $caseStudiesQuery = CaseStudy::where(function ($q) {
@@ -77,6 +79,16 @@ class HomeApiController extends Controller
                 ->map(fn($item) => [
                     'image' => asset('storage/' . $item->image),
                 ]),
+                'settings' => $settings ? [
+            'company_name'      => $settings->company_name ?? null,
+            'helpdesk_number'   => $settings->helpdesk_number ?? null,
+            'black_logo'        => $this->image($settings->black_logo),
+            'white_logo'        => $this->image($settings->white_logo),
+            'backend_logo'      => $this->image($settings->backend_logo),
+            'favicon'           => $this->image($settings->favicon),
+            'cover_image'       => $this->image($settings->cover_image),
+        ] : null,
+
             'partner' => Partner::where('status', 'active')
                 ->get()
                 ->map(fn($item) => [

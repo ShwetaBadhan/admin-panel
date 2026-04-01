@@ -20,11 +20,11 @@
 
 
     <style>
-       .auth-image {
+       {{-- .auth-image {
             background: url('{{ asset('images/logo/auth3.jpg') }}') no-repeat center center;
             background-size: cover;
             min-height: 100vh;
-        }
+        } --}}
         body{
             background: #d7e9ff;
         }
@@ -34,18 +34,23 @@
 <body class="font-sans text-gray-900 antialiased">
 
     <div class="container-fluid p-0 auth-page">
+     @php
+            $settings = App\Models\Setting::first();
+        @endphp
         <div class="row g-0">
             <!-- Left Side Image -->
-            <div class="col-md-7 auth-image d-none d-md-block"></div>
+            <div class="col-md-7 d-none d-md-block" style="
+            background: url('{{ $settings->cover_image ? asset('storage/' . $settings->cover_image) : asset('images/logo/auth3.jpg') }}') no-repeat center center;  background-size: cover;
+            min-height: 100vh;"></div>
 
             <!-- Right Side Form -->
             <div class="col-md-5 bg-white auth-form-section">
                 <div class="auth-form  ">
                     <div class="container">
                         <div class="text-center mb-3">
-                            <a href="">
-                                <img src="{{ asset('images/logo/hozlogo.png') }}" alt="">
-                            </a>
+                       
+                          <img src="{{ $settings->backend_logo ? asset('storage/' . $settings->backend_logo) : asset('images/logo/hozlogo.png') }}"
+                alt="img">
                         </div>
                         <h4 class="text-center mb-4">{{ $title ?? 'Sign in your account' }}</h4>
 

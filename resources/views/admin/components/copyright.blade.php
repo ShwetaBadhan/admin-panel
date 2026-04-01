@@ -1,6 +1,9 @@
 <div class="footer">
     <div class="copyright">
-        <p>&copy; <?= date('Y') ?> <a href="index.php"> Continuity Care Admin Panel</a> | Developed by<a href="https://vibrantick.in/" target="_blank">Vibrantick Infotech Solutions</a> 
+     @php
+            $settings = App\Models\Setting::first();
+        @endphp
+        <p>&copy; <?= date('Y') ?> <a href=""> {{ $settings->company_name ? $settings->	company_name : 'Dashboard' }}</a> | Developed by<a href="https://vibrantick.in/" target="_blank">Vibrantick Infotech Solutions</a> 
         </p>
     </div>
 </div>
