@@ -70,9 +70,10 @@
 
         <!-- Cloudflare Turnstile CAPTCHA -->
         <div class="mb-4">
+         <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response">
             <div class="cf-turnstile" data-sitekey="{{ env('TURNSTILE_SITEKEY') }}" data-callback="onCaptchaSuccess">
             </div>
-
+ <x-input-error :messages="$errors->get('captcha')" class="mt-2 text-danger" />~
         </div>
 
         <!-- Login Button -->
