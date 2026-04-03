@@ -70,41 +70,55 @@
 
         
        <!-- Cloudflare Turnstile Section -->
+<!-- Cloudflare Turnstile Section -->
 <div class="mb-4">
     <!-- Hidden input to store the token -->
     <input type="hidden" name="cf-turnstile-response" id="cf-turnstile-response">
     
-    <!-- Turnstile Widget - Using env() with your exact variable name -->
+    <!-- Turnstile Widget -->
     <div class="cf-turnstile" 
          data-sitekey="{{ env('TURNSTILE_SITEKEY') }}" 
          data-callback="onCaptchaSuccess"
-         data-expired-callback="onCaptchaExpired">
+         data-expired-callback="onCaptchaExpired"
+         data-size="normal">
     </div>
     <x-input-error :messages="$errors->get('captcha')" class="mt-2 text-danger" />
 </div>
-        <!-- Login Button -->
-        <div class="text-center">
-            <button type="submit" class="btn btn-primary btn-block" id="loginButton" disabled>
-                {{ __('Log in') }} <i class="fa fa-paper-plane ms-2"></i>
-            </button>
-        </div>
+     <!-- Login Button -->
+<div class="text-center">
+    <button type="submit" class="btn btn-primary btn-block" id="loginButton" disabled>
+        {{ __('Log in') }} <i class="fa fa-paper-plane ms-2"></i>
+    </button>
+</div>
     </form>
 
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 
-  <script>
+ <!-- ✅ Cloudflare Turnstile Script - ADD THIS -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+
+<script>
     // ✅ Store token when CAPTCHA is solved
     function onCaptchaSuccess(token) {
-        document.getElementById('cf-turnstile-response').value = token; // 🔥 Critical!
+        console.log('CAPTCHA Success:', token); // Debug log
+        document.getElementById('cf-turnstile-response').value = token;
         document.getElementById('loginButton').disabled = false;
     }
 
     // ✅ Reset if token expires
     function onCaptchaExpired() {
+        console.log('CAPTCHA Expired'); // Debug log
         document.getElementById('cf-turnstile-response').value = '';
         document.getElementById('loginButton').disabled = true;
-        if (window.turnstile) turnstile.reset();
+        if (window.turnstile) {
+            turnstile.reset();
+        }
+    }
+
+    // ✅ Handle render error
+    function onCaptchaError() {
+        console.error('CAPTCHA Error'); // Debug log
     }
 
     // Password toggle
@@ -112,11 +126,13 @@
     const password = document.getElementById("password");
     const icon = togglePassword.querySelector("i");
 
-    togglePassword.addEventListener("click", function() {
-        const isPassword = password.type === "password";
-        password.type = isPassword ? "text" : "password";
-        icon.classList.toggle("bi-eye", !isPassword);
-        icon.classList.toggle("bi-eye-slash", isPassword);
-    });
+    if (togglePassword && password) {
+        togglePassword.addEventListener("click", function() {
+            const isPassword = password.type === "password";
+            password.type = isPassword ? "text" : "password";
+            icon.classList.toggle("bi-eye", !isPassword);
+            icon.classList.toggle("bi-eye-slash", isPassword);
+        });
+    }
 </script>
 </x-guest-layout>

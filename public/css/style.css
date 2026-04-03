@@ -41626,7 +41626,7 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 }
 #togglePassword {
     border: 1px solid #d7dae3 !important;
-    height: 56px;
+    height: 42px;
 }
 .auth-page {
     min-height: 100vh;

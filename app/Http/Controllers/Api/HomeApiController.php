@@ -17,6 +17,7 @@ use App\Models\Testimonials;
 use App\Models\Blog;
 use App\Models\Partner;
 use App\Models\Setting;
+use App\Models\CountersSection;
 
 
 class HomeApiController extends Controller
@@ -88,6 +89,23 @@ class HomeApiController extends Controller
             'favicon'           => $this->image($settings->favicon),
             'cover_image'       => $this->image($settings->cover_image),
         ] : null,
+
+       // ✅ CORRECTED
+'counters' => CountersSection::where('is_active', 1)
+    ->get()
+    ->map(function ($item) {
+        // Decode counters JSON if it's stored as JSON
+        $countersData = is_string($item->counters) 
+            ? json_decode($item->counters, true) 
+            : $item->counters;
+        
+        return [
+            'id' => $item->id,
+            'counters' => $countersData ?? [],
+            'background_image' => $this->image($item->background_image),
+            'background_color' => $item->background_color ?? '#2d7a3e',
+        ];
+    }),
 
             'partner' => Partner::where('status', 'active')
                 ->get()
