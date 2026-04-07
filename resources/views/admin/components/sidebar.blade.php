@@ -27,13 +27,17 @@
             </li> --}}
 
             {{-- CMS --}}
-            @canany(['manage-ads', 'manage-blog-categories', 'manage-blogs', 'manage-slider', 'manage-about', 'manage-why-choose-us', 'manage-accreditations', 'manage-gallery', 'manage-testimonials', 'manage-know-us', 'manage-counter', 'manage-what-makes-different', 'manage-partners', 'manage-partner-images', 'manage-why-partners', 'manage-corporate-benefits', 'manage-corporate-services', 'manage-job-career', 'manage-privacy-policy', 'manage-terms-conditions'])
+            @canany(['manage-ads', 'manage-blog-categories', 'manage-blogs', 'manage-slider', 'manage-about',
+                'manage-why-choose-us', 'manage-accreditations', 'manage-gallery', 'manage-testimonials', 'manage-know-us',
+                'manage-counter', 'manage-what-makes-different', 'manage-partners', 'manage-partner-images',
+                'manage-why-partners', 'manage-corporate-benefits', 'manage-corporate-services', 'manage-job-career',
+                'manage-privacy-policy', 'manage-terms-conditions'])
                 <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
                         <i class="flaticon-381-layer-1"></i>
                         <span class="nav-text">CMS</span>
                     </a>
                     <ul aria-expanded="false">
-                       
+
 
                         @canany(['manage-blog-categories', 'manage-blogs'])
                             <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Blogs</a>
@@ -61,47 +65,24 @@
                         @endcanany
 
                         @canany(['manage-slider', 'manage-about', 'manage-why-choose-us', 'manage-accreditations',
-                        'manage-gallery', 'manage-testimonials'])
-                        <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Home Page</a>
-                            <ul aria-expanded="false">
-                                <li><a href="{{ route('sliderimage.index') }}">Slider</a></li>
-                                <li><a href="{{ route('about-section.index') }}">About Us</a></li>
-                                {{-- <li><a href="{{ route('act-about-section.index') }}"> About Act Section</a></li> --}}
-                                {{-- <li><a href="{{ route('how-works.index') }}">How We Works</a></li> --}}
-                                {{-- <li><a href="{{ route('whychoose-section.index') }}">Why Choose Us</a></li> --}}
-                                {{-- <li><a href="{{ route('about-two-section.index') }}">About Two </a></li> --}}
-                                {{-- <li><a href="{{ route('case-study.index') }}">Case Study</a></li> --}}
-                                <li><a href="{{ route('services.index') }}">Service Section</a></li>
-                                <li><a href="{{ route('counters-section.index') }}">Counter Section</a></li>
-                               
-
-                            </ul>
-                        </li>
-                        @endcanany
-                         {{-- <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">About Page</a>
-                            <ul aria-expanded="false">
-                                <li><a href="{{ route('value.index') }}">Values Section</a></li>
-                                <li><a href="{{ route('about-faqs.index') }}">Faq Section</a></li>
-                               
-                            </ul>
-                        </li> --}}
-                         {{-- <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Commitment Page</a>
-                            <ul aria-expanded="false">
-                                <li><a href="{{ route('commitment-one.index') }}">Commitment 1</a></li>
-                                <li><a href="{{ route('commitment-two.index') }}">Commitment 2</a></li>
-                                <li><a href="{{ route('commitment-three.index') }}">Commitment 3</a></li>
-                                <li><a href="{{ route('commitment-four.index') }}">Commitment 4</a></li>
-                               
-                            </ul>
-                        </li> --}}
-
-                        {{-- @can('manage-job-career')
-                            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Job Career</a>
+                            'manage-gallery', 'manage-testimonials'])
+                            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Home Page</a>
                                 <ul aria-expanded="false">
-                                    <li><a href="{{ route('jobcareer.index') }}">Add Vacancy</a></li>
+                                    <li><a href="{{ route('sliderimage.index') }}">Slider</a></li>
+                                    <li><a href="{{ route('about-section.index') }}">About Us</a></li>
+                                    {{-- <li><a href="{{ route('act-about-section.index') }}"> About Act Section</a></li> --}}
+                                    {{-- <li><a href="{{ route('how-works.index') }}">How We Works</a></li> --}}
+                                    {{-- <li><a href="{{ route('whychoose-section.index') }}">Why Choose Us</a></li> --}}
+                                    {{-- <li><a href="{{ route('about-two-section.index') }}">About Two </a></li> --}}
+                                    {{-- <li><a href="{{ route('case-study.index') }}">Case Study</a></li> --}}
+                                    <li><a href="{{ route('services.index') }}">Service Section</a></li>
+                                    <li><a href="{{ route('counters-section.index') }}">Counter Section</a></li>
+
+
                                 </ul>
                             </li>
-                        @endcan --}}
+                        @endcanany
+
 
                         @can('manage-partner-images')
                             <li><a href="{{ route('partners.index') }}" aria-expanded="false">Partners</a></li>
@@ -112,25 +93,56 @@
                         @can('manage-gallery')
                             <li><a href="{{ route('faqs.index') }}" aria-expanded="false">Faq</a></li>
                         @endcan
-                       
-                            {{-- <li><a class="" href="{{ route('client-resources.index') }}" aria-expanded="false">Client Resources</a></li>
+
+                        {{-- <li><a class="" href="{{ route('client-resources.index') }}" aria-expanded="false">Client Resources</a></li>
                             <li><a class="" href="{{ route('staff-resources.index') }}" aria-expanded="false">Staff Resources</a></li>
                         --}}
-                        @can('manage-privacy-policy')
-                            <li><a class="" href="{{ route('admin-privacy-policy.index') }}" aria-expanded="false">Privacy
-                                    Policy</a></li>
-                        @endcan
 
-                        @can('manage-terms-conditions')
-                            <li><a class="" href="{{ route('admin-terms-condition.index') }}" aria-expanded="false">Terms
-                                    Conditions</a></li>
-                        @endcan
+                        @canany(['manage-privacy-policy', 'manage-terms-conditions', 'manage-accessibility',
+                            'manage-cancellation-refund-process', 'manage-disclaimer', 'manage-shipping-policy',
+                            'manage-grievance-redressal'])
+                            <li><a class="has-arrow" href="javascript:void()" aria-expanded="false">Legals</a>
+                                <ul class="" aria-expanded="false">
+                                    @can('manage-privacy-policy')
+                                        <li><a class="" href="{{ route('admin-privacy-policy.index') }}"
+                                                aria-expanded="false">Privacy
+                                                Policy</a></li>
+                                    @endcan
+
+                                    @can('manage-terms-conditions')
+                                        <li><a class="" href="{{ route('admin-terms-condition.index') }}"
+                                                aria-expanded="false">Terms
+                                                Conditions</a></li>
+                                    @endcan
+                                    @can('manage-accessibility')
+                                        <li><a class="" href="{{ route('admin-accessibility.index') }}"
+                                                aria-expanded="false">Accessibility</a></li>
+                                    @endcan
+                                    @can('manage-cancellation-refund-process')
+                                        <li><a class="" href="{{ route('admin-cancellation-policy.index') }}"
+                                                aria-expanded="false">Cancellation & Refund Process</a></li>
+                                    @endcan
+                                    @can('manage-disclaimer')
+                                        <li><a class="" href="{{ route('admin-disclaimer.index') }}"
+                                                aria-expanded="false">Disclaimer</a></li>
+                                    @endcan
+                                    @can('manage-shipping-policy')
+                                        <li><a class="" href="{{ route('admin-shipping-policy.index') }}"
+                                                aria-expanded="false">Shipping Policy</a></li>
+                                    @endcan
+                                    @can('manage-grievance-redressal')
+                                        <li><a class="" href="{{ route('admin-grievance-redressal.index') }}"
+                                                aria-expanded="false">Grievance Redressal</a></li>
+                                    @endcan
+                                </ul>
+                            </li>
+                        @endcanany
                     </ul>
                 </li>
             @endcanany
             {{-- for who we serve --}}
-         
-            
+
+
             {{-- <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
                     <i class="flaticon-381-briefcase"></i>  
                     <span class="nav-text">Who we Serve</span>
@@ -245,7 +257,8 @@
                 </li>
             @endcan
 
-            @canany(['manage-general-settings', 'manage-system-settings', 'manage-seo-settings', 'manage-website-settings'])
+            @canany(['manage-general-settings', 'manage-system-settings', 'manage-seo-settings',
+                'manage-website-settings'])
                 <li><a href="javascript:void(0)" class="has-arrow ai-icon" aria-expanded="false">
                         <i class="flaticon-381-settings-2"></i>
                         <span class="nav-text">Settings</span>
@@ -305,8 +318,8 @@
                     <a href="#" class="dropdown-item ai-icon"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                         <svg id="icon-logout" xmlns="http://www.w3.org/2000/svg" class="text-white" width="18"
-                            height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round">
+                            height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                             <polyline points="16 17 21 12 16 7"></polyline>
                             <line x1="21" y1="12" x2="9" y2="12"></line>

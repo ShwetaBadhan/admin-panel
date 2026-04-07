@@ -33,6 +33,8 @@ use App\Http\Controllers\AboutMakeController;
 use App\Http\Controllers\PartnerAboutController;
 use App\Http\Controllers\WhyPartnerController;
 use App\Http\Controllers\PrivacyPolicyController;
+use App\Http\Controllers\AccessibilityController;
+use App\Http\Controllers\CancellationController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\TermsConditionController;
 use App\Http\Controllers\SeoSettingController;
@@ -40,6 +42,9 @@ use App\Http\Controllers\SeoPageController;
 use App\Http\Controllers\UserRegisterController;
 use App\Http\Controllers\JobCareerApplicationController;
 use App\Http\Controllers\PopularTestController;
+use App\Http\Controllers\DiscalimerController;
+use App\Http\Controllers\GrivanceRedressalController;
+use App\Http\Controllers\ShippingPolicyController;
 // fetch controller class to use in routes
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\AboutCareController;
@@ -490,6 +495,41 @@ Route::middleware('auth')->group(function () {
 
     Route::put('/privacy-policy/update', [PrivacyPolicyController::class, 'update'])
         ->name('admin-privacy-policy.update');
+
+    // Accessibility  CONTENT
+    Route::get('/admin-accessibility', [AccessibilityController::class, 'index'])
+        ->name('admin-accessibility.index');
+
+    Route::put('/admin-accessibility/update', [AccessibilityController::class, 'update'])
+        ->name('admin-accessibility.update');
+
+    // Cancellation  CONTENT
+    Route::get('/admin-cancellation-policy', [CancellationController::class, 'index'])
+        ->name('admin-cancellation-policy.index');
+
+    Route::put('/admin-cancellation-policy/update', [CancellationController::class, 'update'])
+        ->name('admin-cancellation-policy.update');
+
+    // Discalimer  CONTENT
+    Route::get('/admin-disclaimer', [DiscalimerController::class, 'index'])
+        ->name('admin-disclaimer.index');
+
+    Route::put('/admin-disclaimer/update', [DiscalimerController::class, 'update'])
+        ->name('admin-disclaimer.update');
+
+    // Grievance  CONTENT
+    Route::get('/admin-grievance-redressal', [GrivanceRedressalController::class, 'index'])
+        ->name('admin-grievance-redressal.index');
+
+    Route::put('/admin-grievance-redressal/update', [GrivanceRedressalController::class, 'update'])
+        ->name('admin-grievance-redressal.update');
+
+    // Discalimer  CONTENT
+    Route::get('/admin-shipping-policy', [ShippingPolicyController::class, 'index'])
+        ->name('admin-shipping-policy.index');
+
+    Route::put('/admin-shipping-policy/update', [ShippingPolicyController::class, 'update'])
+        ->name('admin-shipping-policy.update');
 
     // TERMS CONDITION POLICY CONTENT
     Route::get('/terms-condition-content', [TermsConditionController::class, 'index'])

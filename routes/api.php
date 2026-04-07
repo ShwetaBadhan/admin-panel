@@ -25,6 +25,13 @@ use App\Http\Controllers\Api\alliedHealthApiController;
 use App\Http\Controllers\Api\planManagementApiController;
 use App\Http\Controllers\Api\supportCoordinationApiController;
 use App\Http\Controllers\Api\ProductApiController;
+use App\Http\Controllers\Api\AccessibilityApiController;
+use App\Http\Controllers\Api\GrievanceApiController;
+use App\Http\Controllers\Api\ShippingPolicyApiController;
+use App\Http\Controllers\Api\CancellationApiController;
+use App\Http\Controllers\Api\DisclaimerApiController;
+use App\Http\Controllers\Api\SystemApiController;
+
 
 
 Route::get('/ping', function () {
@@ -37,6 +44,11 @@ Route::get('/our-commitment', [CommitmentApiController::class, 'index']);
 Route::get('/our-team', [TeamApiController::class, 'index']);
 Route::get('/privacy-policy', [PrivacyApiController::class, 'index']);
 Route::get('/terms-conditions', [TermsApiController::class, 'index']);  
+Route::get('/accessibility', [AccessibilityApiController::class, 'index']);  
+Route::get('/shipping-policy', [ShippingPolicyApiController::class, 'index']);  
+Route::get('/disclaimer', [DisclaimerApiController::class, 'index']);  
+Route::get('/cancel-policy', [CancellationApiController::class, 'index']);  
+Route::get('/grievance-redressal', [GrievanceApiController::class, 'index']);  
 Route::get('/ndis', [NdisApiController::class, 'index']);  
 Route::get('/aged-care', [AgedcareApiController::class, 'index']);  
 Route::get('/blogs', [BlogsApiController::class, 'index']);  
@@ -56,3 +68,4 @@ Route::get('/community-nursing-service', [communityNursingApiController::class, 
 Route::get('/allied-health-service', [alliedHealthApiController::class, 'index']);
 Route::get('/plan-management-service', [planManagementApiController::class, 'index']);
 Route::get('/support-coordination-service', [supportCoordinationApiController::class, 'index']);
+Route::get('/system-setting', [SystemApiController::class, 'index']);
