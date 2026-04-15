@@ -131,114 +131,101 @@
                                             </div>
                                         </td>
                                     </tr>
-                                    <!-- Edit User Modal -->
-                                    <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1">
-                                        <div class="modal-dialog modal-lg">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Edit MLM User</h5>
-                                                    <button type="button" class="btn-close"
-                                                        data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form action="" method="POST" id="editForm">
-                                                    @csrf @method('PUT')
-                                                    <div class="modal-body">
-                                                        {{-- Errors --}}
-                                                        @if ($errors->any())
-                                                            <div class="alert alert-danger">
-                                                                <ul class="mb-0">
-                                                                    @foreach ($errors->all() as $error)
-                                                                        <li>{{ $error }}</li>
-                                                                    @endforeach
-                                                                </ul>
-                                                            </div>
-                                                        @endif
+                                  <!-- Edit User Modal -->
+<div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit MLM User</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <!-- ✅ FIX: Form action set karein -->
+            <form action="{{ route('mlm-users.update', $user->id) }}" method="POST" id="editForm{{ $user->id }}">
+                @csrf 
+                @method('PUT')
+                
+                <div class="modal-body">
+                    {{-- Errors --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
 
-                                                        <input type="hidden" name="user_id" id="edit_user_id">
+                    <div class="row">
+                        <!-- Username (Read-only) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Username</label>
+                            <input type="text" class="form-control" value="{{ $user->user_name }}" readonly>
+                        </div>
 
-                                                        <div class="row">
-                                                            <!-- Username (Read-only) -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">Username</label>
-                                                                <input type="text" name="user_name" class="form-control"
-                                                                    value="{{ $user->user_name }}" readonly>
-                                                            </div>
+                        <!-- Track ID (Read-only) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Track ID</label>
+                            <input type="text" class="form-control" value="{{ $user->track_id }}" readonly>
+                        </div>
 
-                                                            <!-- Track ID (Read-only) -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">Track ID</label>
-                                                                <input type="text" name="track_id " class="form-control"
-                                                                    value="{{ $user->track_id }}" readonly>
-                                                            </div>
+                        <!-- First Name -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">First Name *</label>
+                            <input type="text" name="first_name" class="form-control" value="{{ $user->first_name }}" required>
+                        </div>
 
-                                                            <!-- First Name -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">First Name *</label>
-                                                                <input type="text" name="first_name" class="form-control"
-                                                                    value="{{ $user->first_name }}" required>
-                                                            </div>
+                        <!-- Last Name -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" value="{{ $user->last_name }}">
+                        </div>
 
-                                                            <!-- Last Name -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">Last Name</label>
-                                                                <input type="text" name="last_name"
-                                                                    class="form-control" value="{{ $user->last_name }}">
-                                                            </div>
+                        <!-- Email -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Email *</label>
+                            <input type="email" name="email" class="form-control" value="{{ $user->email }}" required>
+                        </div>
 
-                                                            <!-- Email -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">Email *</label>
-                                                                <input type="email" name="email" class="form-control"
-                                                                    value="{{ $user->email }}" required>
-                                                            </div>
+                        <!-- Phone -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Phone *</label>
+                            <input type="tel" name="phone" class="form-control" value="{{ $user->phone }}" pattern="[0-9]{10}" maxlength="10" required>
+                        </div>
 
-                                                            <!-- Phone -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">Phone *</label>
-                                                                <input type="tel" name="phone" class="form-control"
-                                                                    value="{{ $user->phone }}" pattern="[0-9]{10}"
-                                                                    maxlength="10" required>
-                                                            </div>
+                        <!-- Status -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Status</label>
+                            <select name="is_active" class="form-control">
+                                <option value="1" {{ $user->is_active ? 'selected' : '' }}>Active</option>
+                                <option value="0" {{ !$user->is_active ? 'selected' : '' }}>Inactive</option>
+                            </select>
+                        </div>
 
+                        <!-- New Password (Optional) -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">New Password (Optional)</label>
+                            <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current">
+                            <small class="text-muted">Min 8 characters</small>
+                        </div>
 
-                                                            <!-- Status -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">Status</label>
-                                                                <select name="is_active" class="form-control"
-                                                                    id="edit_is_active">
-                                                                    <option value="1">Active</option>
-                                                                    <option value="0">Inactive</option>
-                                                                </select>
-                                                            </div>
-
-                                                            <!-- New Password (Optional) -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">New Password
-                                                                    (Optional)</label>
-                                                                <input type="password" name="password"
-                                                                    class="form-control"
-                                                                    placeholder="Leave blank to keep current">
-                                                                <small class="text-muted">Min 8 characters</small>
-                                                            </div>
-
-                                                            <!-- Confirm Password -->
-                                                            <div class="col-md-6 mb-3">
-                                                                <label class="form-label fw-bold">Confirm Password</label>
-                                                                <input type="password" name="password_confirmation"
-                                                                    class="form-control">
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-light"
-                                                            data-bs-dismiss="modal">Cancel</button>
-                                                        <button type="submit" class="btn btn-primary">Update
-                                                            User</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
+                        <!-- Confirm Password -->
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Confirm Password</label>
+                            <input type="password" name="password_confirmation" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
                                 @endforeach
                             </tbody>
                         </table>

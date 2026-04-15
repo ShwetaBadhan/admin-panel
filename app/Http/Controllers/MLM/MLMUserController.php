@@ -133,7 +133,6 @@ class MLMUserController extends Controller
             'last_name' => $validated['last_name'] ?? null,
             'email' => $validated['email'],
             'phone' => $validated['phone'],
-            'membership_type' => $validated['membership_type'],
             'is_active' => $validated['is_active'] ?? $mlmUser->is_active,
         ];
 
