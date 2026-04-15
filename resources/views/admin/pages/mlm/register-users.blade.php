@@ -21,7 +21,7 @@
                 </div>
                 <div class="input-group search-area ms-auto d-inline-flex" style="max-width: 300px;">
                     <input type="text" class="form-control" id="searchInput" placeholder="Search users...">
-                    <button class="input-group-text"><i class="bi bi-search"></i></button>
+                    <button class="input-group-text"><i class="fa fas-search"></i></button>
                 </div>
             </div>
 
@@ -265,7 +265,7 @@
                     {{-- ✅ Global Errors --}}
                     @if ($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <h6 class="mb-2"><i class="bi bi-exclamation-triangle me-2"></i>Validation Errors:</h6>
+                            <h6 class="mb-2"></i>Validation Errors:</h6>
                             <ul class="mb-0">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -278,7 +278,7 @@
                     {{-- ✅ Specific Error Messages --}}
                     @if ($errors->has('sponsor_username'))
                         <div class="alert alert-warning">
-                            <i class="bi bi-info-circle"></i> Sponsor username not found: "{{ old('sponsor_username') }}"
+                             Sponsor username not found: "{{ old('sponsor_username') }}"
                         </div>
                     @endif
 
@@ -291,7 +291,7 @@
                                 <label class="form-label fw-bold">Sponsor Username <span
                                         class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-people"></i></span>
+                                  
                                     <input type="text" name="sponsor_username"
                                         class="form-control @error('sponsor_username') is-invalid @enderror"
                                         value="{{ old('sponsor_username') }}"
@@ -308,7 +308,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">User Name <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-person-badge"></i></span>
+                                   
                                     <input type="text" name="user_name"
                                         class="form-control @error('user_name') is-invalid @enderror"
                                         value="{{ old('user_name') }}" placeholder="Unique username" required>
@@ -344,7 +344,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                    
                                     <input type="email" name="email"
                                         class="form-control @error('email') is-invalid @enderror"
                                         value="{{ old('email') }}" placeholder="user@example.com" required>
@@ -358,7 +358,7 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Phone <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-telephone"></i></span>
+                                    
                                     <input type="tel" name="phone"
                                         class="form-control @error('phone') is-invalid @enderror"
                                         value="{{ old('phone') }}" placeholder="9999999999" pattern="[0-9]{10}"
@@ -373,13 +373,13 @@
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Password <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                 
                                     <input type="password" name="password"
                                         class="form-control @error('password') is-invalid @enderror"
                                         placeholder="Min 8 characters" required id="password">
                                     <button type="button" class="btn btn-outline-secondary"
                                         onclick="togglePwd('password')">
-                                        <i class="bi bi-eye"></i>
+                                        <i class="fa fa-eye"></i>
                                     </button>
                                 </div>
                                 @error('password')
@@ -393,13 +393,13 @@
                                 <label class="form-label fw-bold">Confirm Password <span
                                         class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
+                                    
                                     <input type="password" name="password_confirmation"
                                         class="form-control @error('password_confirmation') is-invalid @enderror"
                                         placeholder="Re-enter password" required id="password_confirmation">
                                     <button type="button" class="btn btn-outline-secondary"
                                         onclick="togglePwd('password_confirmation')">
-                                        <i class="bi bi-eye"></i>
+                                        <i class="fa fa-eye"></i>
                                     </button>
                                 </div>
                                 @error('password_confirmation')

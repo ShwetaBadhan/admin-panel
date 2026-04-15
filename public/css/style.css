@@ -15302,7 +15302,7 @@ svg.pulse-svg .third-circle {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
     position: relative;
-    font-size: 15px;
+    font-size: 14px;
     padding-left: 5rem;
 }
 @media only screen and (max-width: 767px) {
@@ -16025,7 +16025,7 @@ svg.pulse-svg .third-circle {
         .metismenu
         > li
         > a {
-        font-size: 16px;
+        font-size: 14px;
     }
 }
 [data-sidebar-style="full"][data-layout="vertical"]
