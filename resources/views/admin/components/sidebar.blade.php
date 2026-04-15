@@ -196,11 +196,11 @@
             @canany(['manage-doctors'])
                 <li><a href="javascript:void(0);" class="ai-icon has-arrow" aria-expanded="false">
                         <i class="flaticon-381-id-card-4"></i>
-                        <span class="nav-text">Staff</span>
+                        <span class="nav-text">Our Team</span>
                     </a>
                     <ul aria-expanded="false">
                         @can('manage-doctors')
-                            <li><a href="{{ route('admin-staff.index') }}">Staff</a></li>
+                            <li><a href="{{ route('admin-staff.index') }}">Team</a></li>
                         @endcan
                     </ul>
                 </li>
