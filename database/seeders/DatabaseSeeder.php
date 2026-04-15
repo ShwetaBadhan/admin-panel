@@ -15,14 +15,14 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        
+        $this->call([
+            AdminUserSeeder::class,
+        RootMlmUserSeeder::class, 
+        SeoPagesSeeder::class,
+        PermissionSeeder::class
+      
+    ]);
 
-        // to create  user
-        $this->call(AdminUserSeeder::class);
-
-        // to create seo pages 
-        $this->call(SeoPagesSeeder::class);
-        // to create permission pages 
-        $this->call(PermissionSeeder::class);
+       
     }
 }

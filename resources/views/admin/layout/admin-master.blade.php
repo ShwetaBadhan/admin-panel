@@ -18,14 +18,14 @@
     @endphp
 
     <!-- Favicon icon -->
-    {{-- <link rel="shortcut icon" href="{{ asset('admin/images/logo/d.png') }}" type="image/x-icon"> --}}
+    {{-- <link rel="shortcut icon" href="{{ url('admin/images/logo/d.png') }}" type="image/x-icon"> --}}
     <link rel="icon" type="image/png"
       href="{{ $settings && $settings->favicon
             ? Storage::url($settings->favicon)
-            : asset('images/favicon.png') }}">
+            : url('images/favicon.png') }}">
 
-    <link href="{{ asset('vendor/owl-carousel/owl.carousel.css') }}" rel="stylesheet" />
-    <link href="{{ asset('vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet" />
+    <link href="{{ url('vendor/owl-carousel/owl.carousel.css') }}" rel="stylesheet" />
+    <link href="{{ url('vendor/bootstrap-select/dist/css/bootstrap-select.min.css') }}" rel="stylesheet" />
 
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
 
@@ -36,11 +36,11 @@
 
 
     <!-- Style Css -->
-    <link class="main-css" href="{{ asset('css/style.css') }}" rel="stylesheet" />
+    <link href="{{ url('css/style.css') }}" rel="stylesheet" />
     {{-- data tables --}}
     <!-- Datatable -->
-    <link href="{{ asset('vendor/datatables/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
+    <link href="{{ url('vendor/datatables/css/responsive.bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url('vendor/datatables/css/jquery.dataTables.min.css') }}" rel="stylesheet">
     <!-- CSS (optional but recommended for styling) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
@@ -98,27 +98,27 @@
 
 
     <!-- Required vendors -->
-    <script src="{{ asset('vendor/global/global.min.js') }}"></script>
-    <script src="{{ asset('vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
-    <script src="{{ asset('vendor/chart.js/chart.bundle.min.js') }}"></script>
-    <script src="{{ asset('vendor/owl-carousel/owl.carousel.js') }}"></script>
+    <script src="{{ url('vendor/global/global.min.js') }}"></script>
+    <script src="{{ url('vendor/bootstrap-select/dist/js/bootstrap-select.min.js') }}"></script>
+    <script src="{{ url('vendor/chart.js/chart.bundle.min.js') }}"></script>
+    <script src="{{ url('vendor/owl-carousel/owl.carousel.js') }}"></script>
 
     <!-- Apex Chart -->
-    <script src="{{ asset('vendor/apexchart/apexchart.js') }}"></script>
+    <script src="{{ url('vendor/apexchart/apexchart.js') }}"></script>
 
     <!-- Dashboard 1 -->
-    <script src="{{ asset('js/dashboard/dashboard-1.js') }}"></script>
-    <script src="{{ asset('js/custom.min.js') }}"></script>
-    <script src="{{ asset('js/deznav-init.js') }}"></script>
-    <script src="{{ asset('js/demo.js') }}"></script>
+    <script src="{{ url('js/dashboard/dashboard-1.js') }}"></script>
+    <script src="{{ url('js/custom.min.js') }}"></script>
+    <script src="{{ url('js/deznav-init.js') }}"></script>
+    <script src="{{ url('js/demo.js') }}"></script>
     {{--
-    <script src="{{ asset('js/styleSwitcher.js') }}"></script> --}}
+    <script src="{{ url('js/styleSwitcher.js') }}"></script> --}}
     {{-- summernote js --}}
     <script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-bs4.min.js"></script>
 
     <!-- Datatable -->
-    <script src="{{ asset('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('vendor/datatables/js/dataTables.responsive.min.js') }}"></script>
+    <script src="{{ url('vendor/datatables/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ url('vendor/datatables/js/dataTables.responsive.min.js') }}"></script>
     {{-- for the push script of the pages --}}
     @stack('scripts')
     <script>

@@ -112,6 +112,8 @@ use App\Http\Controllers\ProductCategoryController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ServicesSectionController;
 use App\Http\Controllers\CountersSectionController;
+use App\Http\Controllers\MLM\RegistrationController;
+use App\Http\Controllers\MLM\MLMUserController;
 
 Route::get('/', function () {
     return redirect('/admin-panel');
@@ -880,6 +882,28 @@ Route::put('/counters-section/{section}', [CountersSectionController::class, 'up
         ->name('accommodation-faq.delete-selected');
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ✅ Simple MLM Routes - All logic in controller
+Route::get('/mlm-users', [MLMUserController::class, 'index'])->name('mlm-users.index');
+Route::post('/mlm-users', [MLMUserController::class, 'store'])->name('mlm-users.store');
+Route::put('/mlm-users/{id}', [MLMUserController::class, 'update'])->name('mlm-users.update');
+Route::delete('/mlm-users/{id}', [MLMUserController::class, 'destroy'])->name('mlm-users.destroy');
+Route::post('/mlm-users/{id}/resend-activation', [MLMUserController::class, 'resendActivation'])->name('mlm-users.resend-activation');
+
+// ✅ Activation Route - Handled by controller method
+Route::get('/activate/{token}', [MLMUserController::class, 'activate'])->name('mlm.activate');
 });
 
 
