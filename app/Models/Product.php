@@ -29,6 +29,7 @@ class Product extends Model
         'additional_info',
         'status',
         'featured',
+         'cc_points',
     ];
 
     protected $casts = [
@@ -38,6 +39,7 @@ class Product extends Model
         'in_stock' => 'boolean',
         'status' => 'boolean',
         'featured' => 'boolean',
+         'cc_points' => 'decimal:2',
     ];
 
     // Auto generate slug
@@ -78,4 +80,16 @@ class Product extends Model
     {
         return $this->discount_price && $this->discount_price < $this->price;
     }
+    // Accessor: Get CC value in ₹
+public function getCcValueInRupeesAttribute(): float
+{
+    return CcPointSetting::calculatePriceFromCC($this->cc_points);
+}
+
+// Helper: Auto-calculate CC from discount price (if not set manually)
+public function autoCalculateCcPoints(): void
+{
+    $price = $this->discount_price ?? $this->price;
+    $this->cc_points = CcPointSetting::calculateCCFromPrice($price);
+}
 }

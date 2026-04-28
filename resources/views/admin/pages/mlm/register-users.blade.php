@@ -19,10 +19,6 @@
                         + Add Customer
                     </button>
                 </div>
-                <div class="input-group search-area ms-auto d-inline-flex" style="max-width: 300px;">
-                    <input type="text" class="form-control" id="searchInput" placeholder="Search users...">
-                    <button class="input-group-text"><i class="fa fas-search"></i></button>
-                </div>
             </div>
 
             <!-- Alerts -->
@@ -44,7 +40,7 @@
             <div class="row">
                 <div class="col-xl-12">
                     <div class="table-responsive">
-                        <table id="mlmUsersTable" class="table table-bordered shadow-sm">
+                        <table class="table table-bordered shadow-sm datatable">
                             <thead class="bg-light">
                                 <tr>
                                     <th>ID</th>
@@ -52,10 +48,8 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Sponsor</th>
-                                    {{-- <th>Position</th>
-                                    <th>Level</th>
-                                    <th>Membership</th> --}}
                                     <th>Status</th>
+                                    <th>Commission</th>
                                     <th>Joined</th>
                                     <th>Actions</th>
                                 </tr>
@@ -78,27 +72,6 @@
                                                 <span class="badge bg-primary">ROOT</span>
                                             @endif
                                         </td>
-                                        {{-- <td>
-                                            @if ($user->tree)
-                                                <span
-                                                    class="badge bg-{{ $user->tree->position === 'left' ? 'success' : ($user->tree->position === 'right' ? 'warning' : 'secondary') }}">
-                                                    {{ ucfirst($user->tree->position) }}
-                                                </span>
-                                            @else
-                                                <span class="badge bg-secondary">Pending</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            @if ($user->tree)
-                                                <span class="badge bg-dark">L{{ $user->tree->level }}</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <span
-                                                class="badge bg-{{ $user->membership_type === 'DIRECT_SELLER' ? 'primary' : ($user->membership_type === 'PREFERRED_CUSTOMER' ? 'info' : 'secondary') }}">
-                                                {{ str_replace('_', ' ', $user->membership_type) }}
-                                            </span>
-                                        </td> --}}
                                         <td>
                                             @if ($user->is_deleted)
                                                 <span class="badge bg-danger">Deleted</span>
@@ -110,128 +83,222 @@
                                                 <span class="badge bg-success">Active</span>
                                             @endif
                                         </td>
+
+                                        <!-- ✅ FIXED: Use direct commission_percentage field -->
+                                        <td>
+                                            @php
+                                                $commission = $user->commission_percentage ?? 10;
+                                                $badgeColor = $commission == 20 ? 'success' : 'primary';
+                                                $amount = $commission == 20 ? 200 : 100;
+                                            @endphp
+                                            <span class="badge bg-{{ $badgeColor }}">
+                                                {{ $commission }}%
+                                            </span>
+                                            <br><small>₹{{ $amount }}/bottle</small>
+                                        </td>
+
                                         <td>{{ $user->created_at->format('M d, Y') }}</td>
                                         <td>
-                                            <div class="d-flex gap-1">
-                                                {{-- <a href="#" class="btn btn-sm btn-info light me-2" title="View">
-                                                    <i class="fas fa-eye"></i>
-                                                </a> --}}
-                                                <!-- Edit Button (Modal Trigger) -->
-                                                <a class="btn btn-sm btn-warning light me-2" title="Edit"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#editUserModal{{ $user->id }}">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-
-                                                <button type="button" class="btn btn-sm btn-danger light"
-                                                    onclick="confirmDelete({{ $user->id }}, '{{ $user->user_name }}')"
-                                                    title="Delete">
-                                                    <i class="fas fa-trash"></i>
+                                            <div class="dropdown">
+                                                <button class="btn btn-sm btn-light" type="button"
+                                                    data-bs-toggle="dropdown" aria-expanded="false" title="Actions"
+                                                    style="border: none; background: transparent;">
+                                                    <i class="fas fa-ellipsis-v text-muted"></i>
                                                 </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm"
+                                                    style="min-width: 200px;">
+                                                    <!-- Edit -->
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center gap-2"
+                                                            href="#" data-bs-toggle="modal"
+                                                            data-bs-target="#editUserModal{{ $user->id }}">
+                                                            <i class="fas fa-edit text-warning"></i>
+                                                            <span>Edit</span>
+                                                        </a>
+                                                    </li>
+
+                                                    <!-- Create Order -->
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center gap-2"
+                                                            href="#"
+                                                            onclick="createOrder({{ $user->id }}, '{{ $user->user_name }}'); return false;">
+                                                            <i class="fas fa-shopping-cart text-success"></i>
+                                                            <span>Create Order</span>
+                                                        </a>
+                                                    </li>
+
+                                                    <!-- Delete -->
+                                                    <li>
+                                                        <a class="dropdown-item d-flex align-items-center gap-2 text-danger"
+                                                            href="#"
+                                                            onclick="confirmDelete({{ $user->id }}, '{{ $user->user_name }}'); return false;">
+                                                            <i class="fas fa-trash"></i>
+                                                            <span>Delete</span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
                                             </div>
                                         </td>
                                     </tr>
-                                  <!-- Edit User Modal -->
-<div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit MLM User</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            
-            <!-- ✅ FIX: Form action set karein -->
-            <form action="{{ route('mlm-users.update', $user->id) }}" method="POST" id="editForm{{ $user->id }}">
-                @csrf 
-                @method('PUT')
-                
-                <div class="modal-body">
-                    {{-- Errors --}}
-                    @if ($errors->any())
-                        <div class="alert alert-danger">
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
 
-                    <div class="row">
-                        <!-- Username (Read-only) -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Username</label>
-                            <input type="text" class="form-control" value="{{ $user->user_name }}" readonly>
-                        </div>
+                                    <!-- Edit User Modal -->
+                                    <div class="modal fade" id="editUserModal{{ $user->id }}" tabindex="-1">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Edit Customer</h5>
+                                                    <button type="button" class="btn-close"
+                                                        data-bs-dismiss="modal"></button>
+                                                </div>
 
-                        <!-- Track ID (Read-only) -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Track ID</label>
-                            <input type="text" class="form-control" value="{{ $user->track_id }}" readonly>
-                        </div>
+                                                <form action="{{ route('mlm-users.update', $user->id) }}" method="POST"
+                                                    id="editForm{{ $user->id }}">
+                                                    @csrf @method('PUT')
+                                                    <div class="modal-body">
+                                                        @if ($errors->any())
+                                                            <div class="alert alert-danger">
+                                                                <ul class="mb-0">
+                                                                    @foreach ($errors->all() as $error)
+                                                                        <li>{{ $error }}</li>
+                                                                    @endforeach
+                                                                </ul>
+                                                            </div>
+                                                        @endif
 
-                        <!-- First Name -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">First Name *</label>
-                            <input type="text" name="first_name" class="form-control" value="{{ $user->first_name }}" required>
-                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">User Name *</label>
+                                                                <input type="text" class="form-control"
+                                                                    value="{{ $user->user_name }}" readonly>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">Sponsor Username *</label>
+                                                                <input type="text" class="form-control"
+                                                                    value="{{ $user->sponsor ? $user->sponsor->user_name : 'ROOT' }}"
+                                                                    readonly>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">First Name *</label>
+                                                                <input type="text" name="first_name" class="form-control"
+                                                                    value="{{ $user->first_name }}" required>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">Last Name</label>
+                                                                <input type="text" name="last_name" class="form-control"
+                                                                    value="{{ $user->last_name }}">
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">Email *</label>
+                                                                <input type="email" name="email" class="form-control"
+                                                                    value="{{ $user->email }}" required>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">Phone *</label>
+                                                                <input type="text" name="phone" class="form-control"
+                                                                    value="{{ $user->phone }}" required>
+                                                            </div>
 
-                        <!-- Last Name -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Last Name</label>
-                            <input type="text" name="last_name" class="form-control" value="{{ $user->last_name }}">
-                        </div>
+                                                            <!-- ✅ FIXED: Commission Dropdown with correct class and value binding -->
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">Commission % <span
+                                                                        class="text-danger">*</span></label>
+                                                                <select name="commission_percentage"
+                                                                    class="form-select @error('commission_percentage') is-invalid @enderror"
+                                                                    required>
+                                                                    @foreach ([10, 12, 14, 16, 18, 20] as $percent)
+                                                                        @php
+                                                                            $label =
+                                                                                $percent == 20
+                                                                                    ? '20% (Premium - ₹200/bottle)'
+                                                                                    : "{$percent}% (₹100/bottle)";
+                                                                        @endphp
+                                                                        <option value="{{ $percent }}"
+                                                                            {{ ($user->commission_percentage ?? 10) == $percent ? 'selected' : '' }}>
+                                                                            {{ $label }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                                @error('commission_percentage')
+                                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                                @enderror
+                                                                <small class="text-muted">10-18% = ₹100 per bottle | 20% =
+                                                                    ₹200 per bottle</small>
+                                                            </div>
 
-                        <!-- Email -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Email *</label>
-                            <input type="email" name="email" class="form-control" value="{{ $user->email }}" required>
-                        </div>
-
-                        <!-- Phone -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Phone *</label>
-                            <input type="tel" name="phone" class="form-control" value="{{ $user->phone }}" pattern="[0-9]{10}" maxlength="10" required>
-                        </div>
-
-                        <!-- Status -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Status</label>
-                            <select name="is_active" class="form-control">
-                                <option value="1" {{ $user->is_active ? 'selected' : '' }}>Active</option>
-                                <option value="0" {{ !$user->is_active ? 'selected' : '' }}>Inactive</option>
-                            </select>
-                        </div>
-
-                        <!-- New Password (Optional) -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">New Password (Optional)</label>
-                            <input type="password" name="password" class="form-control" placeholder="Leave blank to keep current">
-                            <small class="text-muted">Min 8 characters</small>
-                        </div>
-
-                        <!-- Confirm Password -->
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Confirm Password</label>
-                            <input type="password" name="password_confirmation" class="form-control">
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Update User</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">Password</label>
+                                                                <div class="input-group">
+                                                                    <input type="password" name="password"
+                                                                        class="form-control"
+                                                                        placeholder="Leave blank to keep current"
+                                                                        id="edit_password{{ $user->id }}">
+                                                                    <button class="btn btn-outline-secondary"
+                                                                        type="button"
+                                                                        onclick="toggleEditPassword({{ $user->id }})">
+                                                                        <i class="fa fa-eye"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <small class="text-muted">Leave blank to keep current
+                                                                    password</small>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <label class="form-label fw-bold">Confirm Password</label>
+                                                                <div class="input-group">
+                                                                    <input type="password" name="password_confirmation"
+                                                                        class="form-control"
+                                                                        id="edit_password_confirmation{{ $user->id }}">
+                                                                    <button class="btn btn-outline-secondary"
+                                                                        type="button"
+                                                                        onclick="toggleEditPasswordConfirm({{ $user->id }})">
+                                                                        <i class="fa fa-eye"></i>
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-12 mb-3">
+                                                                <div class="row">
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label fw-bold">Active</label>
+                                                                        <div class="form-check form-switch">
+                                                                            <input type="hidden" name="is_active"
+                                                                                value="0">
+                                                                            <input type="checkbox" name="is_active"
+                                                                                class="form-check-input"
+                                                                                id="is_active{{ $user->id }}"
+                                                                                value="1"
+                                                                                {{ $user->is_active ? 'checked' : '' }}
+                                                                                role="switch">
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label fw-bold">Verified</label>
+                                                                        <div class="form-check form-switch">
+                                                                            <input type="hidden" name="is_verified"
+                                                                                value="0">
+                                                                            <input type="checkbox" name="is_verified"
+                                                                                class="form-check-input"
+                                                                                id="is_verified{{ $user->id }}"
+                                                                                value="1"
+                                                                                {{ $user->is_verified ? 'checked' : '' }}
+                                                                                role="switch">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-light"
+                                                            data-bs-dismiss="modal">CANCEL</button>
+                                                        <button type="submit" class="btn btn-primary">UPDATE</button>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 @endforeach
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-3">
                         {{ $users->links() }}
                     </div>
@@ -239,6 +306,7 @@
             </div>
         </div>
     </div>
+
     <!-- Add User Modal -->
     <div class="modal fade" id="addUserModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
@@ -248,11 +316,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-
-                    {{-- ✅ Global Errors --}}
                     @if ($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <h6 class="mb-2"></i>Validation Errors:</h6>
+                            <h6 class="mb-2">Validation Errors:</h6>
                             <ul class="mb-0">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -262,50 +328,29 @@
                         </div>
                     @endif
 
-                    {{-- ✅ Specific Error Messages --}}
-                    @if ($errors->has('sponsor_username'))
-                        <div class="alert alert-warning">
-                             Sponsor username not found: "{{ old('sponsor_username') }}"
-                        </div>
-                    @endif
-
                     <form action="{{ route('mlm-users.store') }}" method="POST" id="mlmRegisterForm" novalidate>
                         @csrf
-
                         <div class="row">
-                            <!-- Sponsor Username -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Sponsor Username <span
                                         class="text-danger">*</span></label>
-                                <div class="input-group">
-                                  
-                                    <input type="text" name="sponsor_username"
-                                        class="form-control @error('sponsor_username') is-invalid @enderror"
-                                        value="{{ old('sponsor_username') }}"
-                                        placeholder="Enter sponsor username (e.g., Founder01)" required autocomplete="off"
-                                        id="sponsor_username">
-                                </div>
+                                <input type="text" name="sponsor_username"
+                                    class="form-control @error('sponsor_username') is-invalid @enderror"
+                                    value="{{ old('sponsor_username') }}" placeholder="Enter sponsor username" required
+                                    autocomplete="off" id="sponsor_username">
                                 @error('sponsor_username')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted" id="sponsor-status"></small>
                             </div>
-
-                            <!-- User Name -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">User Name <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                   
-                                    <input type="text" name="user_name"
-                                        class="form-control @error('user_name') is-invalid @enderror"
-                                        value="{{ old('user_name') }}" placeholder="Unique username" required>
-                                </div>
+                                <input type="text" name="user_name"
+                                    class="form-control @error('user_name') is-invalid @enderror"
+                                    value="{{ old('user_name') }}" placeholder="Unique username" required>
                                 @error('user_name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- First Name -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">First Name <span class="text-danger">*</span></label>
                                 <input type="text" name="first_name"
@@ -315,8 +360,6 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- Last Name -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Last Name</label>
                                 <input type="text" name="last_name"
@@ -326,222 +369,252 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- Email -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Email <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    
-                                    <input type="email" name="email"
-                                        class="form-control @error('email') is-invalid @enderror"
-                                        value="{{ old('email') }}" placeholder="user@example.com" required>
-                                </div>
+                                <input type="email" name="email"
+                                    class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}"
+                                    placeholder="user@example.com" required>
                                 @error('email')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-
-                            <!-- Phone -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Phone <span class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    
-                                    <input type="tel" name="phone"
-                                        class="form-control @error('phone') is-invalid @enderror"
-                                        value="{{ old('phone') }}" placeholder="9999999999" pattern="[0-9]{10}"
-                                        maxlength="10" required>
-                                </div>
+                                <input type="tel" name="phone"
+                                    class="form-control @error('phone') is-invalid @enderror" value="{{ old('phone') }}"
+                                    placeholder="9999999999" pattern="[0-9]{10}" maxlength="10" required>
                                 @error('phone')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <!-- Password -->
+                            <!-- Commission Percentage -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Commission % <span class="text-danger">*</span></label>
+                                <select name="commission_percentage"
+                                    class="form-select @error('commission_percentage') is-invalid @enderror" required>
+                                    <option value="">Select Commission</option>
+                                    @foreach ([10, 12, 14, 16, 18, 20] as $percent)
+                                        @php
+                                            $label =
+                                                $percent == 20
+                                                    ? '20% (Premium - ₹200/bottle)'
+                                                    : "{$percent}% (₹100/bottle)";
+                                        @endphp
+                                        <option value="{{ $percent }}"
+                                            {{ old('commission_percentage') == $percent ? 'selected' : '' }}>
+                                            {{ $label }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('commission_percentage')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">10-18% = ₹100 per bottle | 20% = ₹200 per bottle</small>
+                            </div>
+
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Password <span class="text-danger">*</span></label>
                                 <div class="input-group">
-                                 
                                     <input type="password" name="password"
                                         class="form-control @error('password') is-invalid @enderror"
                                         placeholder="Min 8 characters" required id="password">
                                     <button type="button" class="btn btn-outline-secondary"
-                                        onclick="togglePwd('password')">
-                                        <i class="fa fa-eye"></i>
-                                    </button>
+                                        onclick="togglePwd('password')"><i class="fa fa-eye"></i></button>
                                 </div>
                                 @error('password')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">Min 8 chars, 1 uppercase, 1 number</small>
                             </div>
-
-                            <!-- Confirm Password -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Confirm Password <span
                                         class="text-danger">*</span></label>
                                 <div class="input-group">
-                                    
                                     <input type="password" name="password_confirmation"
                                         class="form-control @error('password_confirmation') is-invalid @enderror"
                                         placeholder="Re-enter password" required id="password_confirmation">
                                     <button type="button" class="btn btn-outline-secondary"
-                                        onclick="togglePwd('password_confirmation')">
-                                        <i class="fa fa-eye"></i>
-                                    </button>
+                                        onclick="togglePwd('password_confirmation')"><i class="fa fa-eye"></i></button>
                                 </div>
                                 @error('password_confirmation')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
-
-                        <!-- Terms -->
-                        <div class="mb-4">
-                            <div class="form-check">
-                                <input type="checkbox" name="terms"
-                                    class="form-check-input @error('terms') is-invalid @enderror" id="terms" required>
-                                <label class="form-check-label" for="terms">
-                                    I agree to Terms & Conditions <span class="text-danger">*</span>
-                                </label>
-                                @error('terms')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Buttons -->
                         <div class="d-flex justify-content-end gap-2 pt-3 border-top">
                             <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
                             <button type="reset" class="btn btn-warning px-4">Reset</button>
-                            <button type="submit" class="btn btn-primary px-5" id="submitBtn">
-                                <i class="bi bi-check-circle me-2"></i>Register User
-                            </button>
+                            <button type="submit" class="btn btn-primary px-5" id="submitBtn"><i
+                                    class="bi bi-check-circle me-2"></i>Register User</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-    <!-- Delete Confirmation Script -->
-    @push('scripts')
-        <script>
-            // Toggle Password
-            function togglePwd(fieldId) {
-                const input = document.getElementById(fieldId);
-                input.type = input.type === 'password' ? 'text' : 'password';
-            }
 
-            // Validate Sponsor in Real-time
-            document.getElementById('sponsor_username').addEventListener('blur', async function() {
-                const username = this.value.trim();
-                const statusEl = document.getElementById('sponsor-status');
+    <!-- ✅ Simple Create Order Modal -->
+    <div class="modal fade" id="createOrderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form action="{{ route('mlm-users.store-order') }}" method="POST">
+                @csrf
+                <input type="hidden" name="user_id" id="orderUserId">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title"><i class="fas fa-shopping-cart me-2"></i>Create Order</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (isset($products) && $products->count() > 0)
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Select Product</label>
+                                <select name="items[0][product_id]" id="productSelect" class="form-select" required>
+                                    <option value="">Choose a product...</option>
+                                    @foreach ($products as $p)
+                                        <option value="{{ $p->id }}">
+                                            {{ $p->name }} ({{ $p->sku }}) -
+                                            ₹{{ number_format($p->discount_price ?? $p->price, 2) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Quantity</label>
+                                <input type="number" name="items[0][quantity]" class="form-control" min="1"
+                                    max="99" value="1" required>
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label fw-bold">Payment Mode</label>
+                                <select name="payment_mode" class="form-select" required>
+                                    <option value="cash">Cash</option>
+                                    <option value="online">Online Payment</option>
+                                    <option value="upi">UPI</option>
+                                </select>
+                            </div>
+                        @else
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>No products available. Please add products
+                                first.
+                            </div>
+                        @endif
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        @if (isset($products) && $products->count() > 0)
+                            <button type="submit" class="btn btn-success"><i class="fas fa-check me-1"></i>Create
+                                Order</button>
+                        @endif
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 
-                if (username.length >= 3) {
-                    try {
-                        const response = await fetch(
-                            `/api/mlm/check-sponsor?username=${encodeURIComponent(username)}`);
-                        const data = await response.json();
-
-                        if (data.valid) {
-                            statusEl.textContent = `✓ Valid sponsor: ${data.sponsor_name}`;
-                            statusEl.className = 'text-success';
-                        } else {
-                            statusEl.textContent = '✗ Sponsor not found';
-                            statusEl.className = 'text-danger';
-                        }
-                    } catch (error) {
-                        console.log('Sponsor check failed:', error);
-                    }
-                }
-            });
-
-            // Form Submit Handler
-            document.getElementById('mlmRegisterForm').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                const password = document.getElementById('password').value;
-                const confirm = document.getElementById('password_confirmation').value;
-
-                if (password !== confirm) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Password Mismatch',
-                        text: 'Passwords do not match!',
-                        timer: 3000
-                    });
-                    return false;
-                }
-
-                // Show loading
-                const submitBtn = document.getElementById('submitBtn');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Registering...';
-                submitBtn.disabled = true;
-
-                // Debug: Log form data
-                const formData = new FormData(this);
-                console.log('Form Data:');
-                for (let [key, value] of formData.entries()) {
-                    console.log(`${key}: ${value}`);
-                }
-
-                // Submit form
-                this.submit();
-
-                // Reset button on error (will be reset on page reload if success)
-                setTimeout(() => {
-                    submitBtn.innerHTML = originalText;
-                    submitBtn.disabled = false;
-                }, 5000);
-            });
-
-            // Search Filter
-            document.getElementById('searchInput')?.addEventListener('keyup', function() {
-                const filter = this.value.toLowerCase();
-                const rows = document.querySelectorAll('#mlmUsersTable tbody tr');
-                rows.forEach(row => {
-                    const text = row.textContent.toLowerCase();
-                    row.style.display = text.includes(filter) ? '' : 'none';
-                });
-            });
-
-            // Delete Confirmation
-            function confirmDelete(userId, userName) {
-                Swal.fire({
-                    title: 'Delete User?',
-                    text: `Are you sure you want to delete "${userName}"?`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, Delete',
-                    cancelButtonText: 'Cancel',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        const form = document.createElement('form');
-                        form.method = 'POST';
-                        form.action = `/mlm-users/${userId}`;
-                        form.innerHTML = `@csrf @method('DELETE')`;
-                        document.body.appendChild(form);
-                        form.submit();
-                    }
-                });
-            }
-
-            // On page load - check if modal should be shown with errors
-            @if ($errors->any())
-                document.addEventListener('DOMContentLoaded', function() {
-                    const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
-                    modal.show();
-
-                    // Show error alert
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Registration Failed',
-                        text: 'Please check the errors below and try again.',
-                        timer: 4000
-                    });
-                });
-            @endif
-        </script>
-    @endpush
 @endsection
+
+@push('scripts')
+    <script>
+        // Toggle Password
+        function togglePwd(fieldId) {
+            const input = document.getElementById(fieldId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Toggle Edit Password
+        function toggleEditPassword(userId) {
+            const input = document.getElementById('edit_password' + userId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Toggle Edit Password Confirm
+        function toggleEditPasswordConfirm(userId) {
+            const input = document.getElementById('edit_password_confirmation' + userId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // Validate Sponsor in Real-time
+        document.getElementById('sponsor_username').addEventListener('blur', async function() {
+            const username = this.value.trim();
+            const statusEl = document.getElementById('sponsor-status');
+            if (username.length >= 3) {
+                try {
+                    const response = await fetch(
+                        `/api/mlm/check-sponsor?username=${encodeURIComponent(username)}`);
+                    const data = await response.json();
+                    if (data.valid) {
+                        statusEl.textContent = `✓ Valid sponsor: ${data.sponsor_name}`;
+                        statusEl.className = 'text-success';
+                    } else {
+                        statusEl.textContent = '✗ Sponsor not found';
+                        statusEl.className = 'text-danger';
+                    }
+                } catch (error) {
+                    console.log('Sponsor check failed:', error);
+                }
+            }
+        });
+
+        // Form Submit Handler
+        document.getElementById('mlmRegisterForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('password_confirmation').value;
+            if (password !== confirm) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Password Mismatch',
+                    text: 'Passwords do not match!',
+                    timer: 3000
+                });
+                return false;
+            }
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="bi bi-hourglass-split me-2"></i>Registering...';
+            submitBtn.disabled = true;
+            this.submit();
+        });
+
+        // Delete Confirmation
+        function confirmDelete(userId, userName) {
+            Swal.fire({
+                title: 'Delete User?',
+                text: `Are you sure you want to delete "${userName}"?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Delete',
+                cancelButtonText: 'Cancel',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = `/mlm-users/${userId}`;
+                    form.innerHTML = `@csrf @method('DELETE')`;
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
+
+        // Create Order Modal
+        function createOrder(userId, userName) {
+            $('#orderUserId').val(userId);
+            $('#productSelect').val('');
+            $('#createOrderModal').modal('show');
+        }
+
+        // On page load - show modal if errors
+        @if ($errors->any())
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = new bootstrap.Modal(document.getElementById('addUserModal'));
+                modal.show();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Registration Failed',
+                    text: 'Please check the errors below and try again.',
+                    timer: 4000
+                });
+            });
+        @endif
+    </script>
+@endpush

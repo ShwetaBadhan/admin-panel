@@ -149,6 +149,8 @@ Route::middleware('auth')->group(function () {
         Route::resource('products', ProductController::class);
     Route::delete('products/{product}/remove-image', [ProductController::class, 'removeImage'])
         ->name('products.remove-image');
+        Route::put('/products/{product}/update-cc', [ProductController::class, 'updateCC'])
+    ->name('products.update-cc');
 
     // ────────────── Tests Details ──────────────
     Route::get('/tests', [TestController::class, 'index'])->name('admin.pages.test');
@@ -904,6 +906,22 @@ Route::post('/mlm-users/{id}/resend-activation', [MLMUserController::class, 'res
 
 // ✅ Activation Route - Handled by controller method
 Route::get('/activate/{token}', [MLMUserController::class, 'activate'])->name('mlm.activate');
+
+ // Recycle Bin Routes
+    Route::get('/recycle-bin', [MLMUserController::class, 'recycleBin'])->name('recycle-bin');
+    Route::post('/{id}/restore', [MLMUserController::class, 'restore'])->name('restore');
+    Route::delete('/{id}/permanent', [MLMUserController::class, 'permanentDelete'])->name('permanent-delete');
+    
+    // Bulk Actions
+    Route::post('/bulk-restore', [MLMUserController::class, 'bulkRestore'])->name('bulk-restore');
+    Route::post('/bulk-permanent-delete', [MLMUserController::class, 'bulkPermanentDelete'])->name('bulk-permanent-delete');
+
+Route::get('/mlm-users/{user}/create-order', [MLMUserController::class, 'showCreateOrder'])
+    ->name('mlm-users.create-order');
+Route::post('/mlm-users/create-order', [MLMUserController::class, 'storeOrder'])
+    ->name('mlm-users.store-order');
+Route::get('/api/products/list', [ProductController::class, 'getProductsList'])
+    ->name('api.products.list');
 });
 
 

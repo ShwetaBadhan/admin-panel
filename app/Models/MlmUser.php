@@ -15,7 +15,7 @@ class MlmUser extends Model
         'email', 'phone', 'password', 'sponsor_id', 'position_in_sponsor_leg',
         'membership_type', 'desired_membership_type', 'current_package_id',
         'is_active', 'is_verified', 'is_deleted', 'is_defaulter', 'is_payout_active',
-        'verification_token', 'verification_expires'
+        'verification_token', 'verification_expires','commission_percentage'
     ];
 
     protected $hidden = ['password', 'verification_token'];
@@ -82,4 +82,9 @@ class MlmUser extends Model
     {
         return trim("{$this->first_name} {$this->last_name}");
     }
+    public function commissionSetting()
+{
+    return $this->hasOne(UserCommissionSetting::class, 'mlm_user_id');
+}
+
 }

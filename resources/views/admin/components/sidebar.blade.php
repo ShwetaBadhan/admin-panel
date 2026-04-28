@@ -23,6 +23,7 @@
 
                     <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Manage
                             Customers</a></li>
+                    <li><a class="" href="{{ route('recycle-bin') }}" aria-expanded="false">Recycle Bin</a></li>
                     {{-- <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Team Genealogy</a></li>
                     <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Spilling Preferences</a></li> --}}
 

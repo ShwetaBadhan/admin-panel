@@ -122,6 +122,7 @@
     {{-- for the push script of the pages --}}
     @stack('scripts')
     <script>
+    $('.datatable').DataTable();
         // for description to adjust in cell
         document.addEventListener("DOMContentLoaded", function () {
             const descCell = document.getElementById("content");
