@@ -24,12 +24,12 @@ class MLMUserController extends Controller
             ->where('is_deleted', false)
             ->orderBy('created_at', 'desc')
             ->paginate(15);
-        
+
         // ✅ Load active products for order modal
         $products = Product::where('status', 1)
             ->where('stock', '>', 0)
             ->get(['id', 'name', 'sku', 'price', 'discount_price', 'cc_points', 'stock']);
-            
+
         return view('admin.pages.mlm.register-users', compact('users', 'products'));
     }
 
@@ -52,11 +52,11 @@ class MLMUserController extends Controller
 
             foreach ($validated['items'] as $item) {
                 $product = Product::lockForUpdate()->find($item['product_id']);
-                
+
                 if (!$product) {
                     throw new \Exception("Product not found");
                 }
-                
+
                 if ($product->stock < $item['quantity']) {
                     throw new \Exception("Insufficient stock for {$product->name}. Available: {$product->stock}");
                 }
@@ -97,9 +97,8 @@ class MLMUserController extends Controller
             }
 
             DB::commit();
-            
-            return back()->with('success', "✅ Order created successfully! Order ID: {$order->id} | CC Points: {$totalCC}");
 
+            return back()->with('success', "✅ Order created successfully! Order ID: {$order->id} | CC Points: {$totalCC}");
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->withErrors(['error' => $e->getMessage()])->withInput();
@@ -117,29 +116,24 @@ class MLMUserController extends Controller
             'phone' => 'required|digits:10|unique:mlm_users,phone',
             'password' => 'required|string|min:8|confirmed',
             'commission_percentage' => 'required|in:10,12,14,16,18,20',
-        ], [
-            'sponsor_username.exists' => 'Sponsor username not found.',
-            'commission_percentage.in' => 'Commission must be 10%, 12%, 14%, 16%, 18%, or 20%.',
         ]);
 
         DB::beginTransaction();
         try {
             $sponsor = MlmUser::where('user_name', $validated['sponsor_username'])
-                ->where('is_active', true)
-                ->where('is_deleted', false)
-                ->firstOrFail();
+                ->where('is_active', true)->where('is_deleted', false)->firstOrFail();
 
-            $trackId = 'TRK' . date('Y') . strtoupper(Str::random(6)) . time();
-
+            // 1. Create User
             $mlmUser = MlmUser::create([
                 'user_name' => $validated['user_name'],
-                'track_id' => $trackId,
+                'track_id' => 'TRK' . date('Y') . strtoupper(Str::random(6)) . time(),
                 'first_name' => $validated['first_name'],
                 'last_name' => $validated['last_name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'password' => Hash::make($validated['password']),
                 'sponsor_id' => $sponsor->id,
+                // ✅ FIX: Use 'none' instead of 'pending'
                 'position_in_sponsor_leg' => 'none',
                 'membership_type' => 'CUSTOMER',
                 'is_active' => false,
@@ -150,39 +144,168 @@ class MLMUserController extends Controller
                 'commission_percentage' => $validated['commission_percentage'],
             ]);
 
-            SpillingPreference::create([
+            // 2. Create Tree Node → Holding Tank
+            \App\Models\MLMTree::create([
                 'mlm_user_id' => $mlmUser->id,
-                'preference' => 'HOLDING_TANK',
+                'parent_id' => null,
+                'position' => 'none',
+                'level' => 0,
             ]);
 
-            $activationUrl = route('mlm.activate', ['token' => $mlmUser->verification_token]);
-
-            try {
-                Mail::to($mlmUser->email)->send(new MlmActivationMail($mlmUser, $activationUrl));
-                Log::info("Activation email sent to {$mlmUser->email}");
-            } catch (\Exception $e) {
-                Log::error("Email failed for {$mlmUser->email}: " . $e->getMessage());
-            }
+           try {
+    $activationUrl = route('mlm.activate', ['token' => $mlmUser->verification_token]);
+    
+    // Log before sending
+    Log::info("Preparing to send activation email", [
+        'user' => $mlmUser->user_name,
+        'email' => $mlmUser->email,
+        'token' => substr($mlmUser->verification_token, 0, 10).'...',
+        'url' => $activationUrl,
+    ]);
+    
+    // Send email (sync, not queued)
+    Mail::to($mlmUser->email)->send(new MlmActivationMail($mlmUser, $activationUrl));
+    
+    // Log success
+    Log::info("✅ Activation email SENT successfully", [
+        'user' => $mlmUser->user_name,
+        'email' => $mlmUser->email,
+    ]);
+    
+} catch (\Exception $e) {
+    // Log detailed error
+    Log::error("❌ Activation email FAILED", [
+        'user' => $mlmUser->user_name,
+        'email' => $mlmUser->email,
+        'error' => $e->getMessage(),
+        'trace' => $e->getTraceAsString(),
+    ]);
+    
+    // Don't rollback - user still created, admin can resend later
+    // But add a warning to session
+    session()->flash('email_warning', "User created but activation email failed. Admin can resend from user list.");
+}
 
             DB::commit();
-
             return redirect()->route('mlm-users.index')
-                ->with('success', "User registered! Activation email sent to {$mlmUser->email}");
-
+                ->with('success', "User registered! Added to Holding Tank.");
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('MLM Registration Failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return back()->withErrors(['error' => 'Registration failed: ' . $e->getMessage()])->withInput();
+            return back()->withErrors(['error' => $e->getMessage()])->withInput();
         }
     }
 
+
+    public function holdingTank()
+    {
+        // ✅ Get unplaced users (EXCLUDING ROOT USER)
+        $holdingUsers = \App\Models\MLMTree::with(['mlmUser.sponsor'])
+            ->whereHas('mlmUser', function ($q) {
+                $q->where('is_verified', true)
+                    ->where('is_active', true);
+            })
+            ->where(function ($q) {
+                $q->whereNull('parent_id')
+                    ->where('position', 'none');
+            })
+            ->whereHas('mlmUser', function ($q) {
+                $q->where('user_name', '!=', 'Founder01');
+            })
+            ->latest()
+            ->paginate(15);
+
+        // ✅ Get ALL active users as parents (INCLUDING Founder01)
+        $parents = MlmUser::where('is_active', true)
+            ->where('is_deleted', false)
+            ->orderBy('user_name')
+            ->get(['id', 'user_name', 'first_name', 'last_name']);
+
+        return view('admin.pages.mlm.holding-tank', compact('holdingUsers', 'parents'));
+    }
+
+    public function scopeInHoldingTank($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('parent_id')
+                ->where('position', 'none');
+        })
+            ->whereHas('mlmUser', function ($q) {
+                $q->where('is_verified', true)
+                    ->where('is_active', true)
+                    ->where('user_name', '!=', 'Founder01'); // Root exclude
+            });
+    }
+    public function placeUser(Request $request)
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|exists:mlm_users,id',
+            'parent_id' => 'required|exists:mlm_users,id',
+            'position' => 'required|in:left,right',
+        ]);
+
+        // Prevent self-placement
+        if ($validated['user_id'] == $validated['parent_id']) {
+            return back()->withErrors(['error' => 'User ko khud ke neeche place nahi kar sakte.']);
+        }
+
+        DB::beginTransaction();
+        try {
+            $userTree = \App\Models\MLMTree::where('mlm_user_id', $validated['user_id'])
+                ->where(function ($q) {
+                    $q->whereNull('parent_id')->orWhere('position', 'none');
+                })
+                ->with('mlmUser') // ✅ Load user relation
+                ->firstOrFail();
+
+            $user = $userTree->mlmUser;
+
+            // 🔒 STRICT VALIDATION: Active & Verified hona zaroori hai
+            if (!$user->is_verified) {
+                throw new \Exception('❌ User verified nahi hai. Pehle verify karein.');
+            }
+            if (!$user->is_active) {
+                throw new \Exception('❌ User active nahi hai. Pehle activate karein.');
+            }
+
+            // ✅ Parent Tree Node Fetch
+            $parentTree = \App\Models\MLMTree::where('mlm_user_id', $validated['parent_id'])->firstOrFail();
+
+            // ✅ Position Availability Check
+            $occupied = \App\Models\MLMTree::where('parent_id', $parentTree->id)
+                ->where('position', $validated['position'])
+                ->exists();
+
+            if ($occupied) {
+                throw new \Exception("❌ Position '{$validated['position']}' already occupied hai is parent ke neeche.");
+            }
+
+            // 🌳 Tree Node Update
+            $userTree->update([
+                'parent_id' => $parentTree->id,
+                'position' => $validated['position'],
+                'level' => $parentTree->level + 1,
+            ]);
+
+            // 🔄 Closure Table Sync
+            app(\App\Services\MLMClosureService::class)->syncClosures($userTree, $validated['parent_id']);
+
+            // ✅ Update User Reference
+            $user->update(['position_in_sponsor_leg' => $validated['position']]);
+
+            DB::commit();
+            return back()->with('success', "✅ User successfully placed in {$validated['position']} leg!");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'first_name' => 'required|string|max:100',
             'last_name' => 'nullable|string|max:100',
-            'email' => 'required|email|max:255|unique:mlm_users,email,'.$id,
-            'phone' => 'required|string|max:20|unique:mlm_users,phone,'.$id,
+            'email' => 'required|email|max:255|unique:mlm_users,email,' . $id,
+            'phone' => 'required|string|max:20|unique:mlm_users,phone,' . $id,
             'is_active' => 'nullable|boolean',
             'is_verified' => 'nullable|boolean',
             'password' => 'nullable|string|min:8|confirmed',
@@ -190,7 +313,7 @@ class MLMUserController extends Controller
         ]);
 
         $mlmUser = MlmUser::findOrFail($id);
-        
+
         $updateData = [
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'] ?? null,

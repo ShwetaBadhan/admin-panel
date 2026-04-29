@@ -114,6 +114,7 @@ use App\Http\Controllers\ServicesSectionController;
 use App\Http\Controllers\CountersSectionController;
 use App\Http\Controllers\MLM\RegistrationController;
 use App\Http\Controllers\MLM\MLMUserController;
+use App\Http\Controllers\MLM\TeamGenealogyController;
 
 Route::get('/', function () {
     return redirect('/admin-panel');
@@ -903,10 +904,16 @@ Route::post('/mlm-users', [MLMUserController::class, 'store'])->name('mlm-users.
 Route::put('/mlm-users/{id}', [MLMUserController::class, 'update'])->name('mlm-users.update');
 Route::delete('/mlm-users/{id}', [MLMUserController::class, 'destroy'])->name('mlm-users.destroy');
 Route::post('/mlm-users/{id}/resend-activation', [MLMUserController::class, 'resendActivation'])->name('mlm-users.resend-activation');
-
+Route::get('/holding-tank', [MLMUserController::class, 'holdingTank'])->name('holding-tank');
+Route::post('/holding-tank/place', [MLMUserController::class, 'placeUser'])->name('holding-tank.place');
 // ✅ Activation Route - Handled by controller method
 Route::get('/activate/{token}', [MLMUserController::class, 'activate'])->name('mlm.activate');
 
+Route::get('/team-genealogy', [TeamGenealogyController::class, 'index'])
+    ->name('team-genealogy.index');
+    
+Route::get('/team-genealogy/user/{userId}', [TeamGenealogyController::class, 'userProfile'])
+    ->name('team-genealogy.profile');
  // Recycle Bin Routes
     Route::get('/recycle-bin', [MLMUserController::class, 'recycleBin'])->name('recycle-bin');
     Route::post('/{id}/restore', [MLMUserController::class, 'restore'])->name('restore');
