@@ -914,15 +914,16 @@ Route::get('/team-genealogy', [TeamGenealogyController::class, 'index'])
     
 Route::get('/team-genealogy/user/{userId}', [TeamGenealogyController::class, 'userProfile'])
     ->name('team-genealogy.profile');
- // Recycle Bin Routes
-    Route::get('/recycle-bin', [MLMUserController::class, 'recycleBin'])->name('recycle-bin');
-    Route::post('/{id}/restore', [MLMUserController::class, 'restore'])->name('restore');
-    Route::delete('/{id}/permanent', [MLMUserController::class, 'permanentDelete'])->name('permanent-delete');
-    
-    // Bulk Actions
-    Route::post('/bulk-restore', [MLMUserController::class, 'bulkRestore'])->name('bulk-restore');
-    Route::post('/bulk-permanent-delete', [MLMUserController::class, 'bulkPermanentDelete'])->name('bulk-permanent-delete');
 
+// ✅ GET Route (Keep only ONE)
+Route::get('/recycle-bin', [App\Http\Controllers\MLM\MLMUserController::class, 'recycleBin'])->name('recycle-bin');
+
+// ✅ POST Routes (Add these below it)
+Route::post('/recycle-bin/{id}/restore', [App\Http\Controllers\MLM\MLMUserController::class, 'restore'])->name('recycle-bin.restore');
+Route::post('/recycle-bin/{id}/permanent', [App\Http\Controllers\MLM\MLMUserController::class, 'permanentDelete'])->name('recycle-bin.permanent');
+
+Route::post('/recycle-bin/bulk-restore', [App\Http\Controllers\MLM\MLMUserController::class, 'bulkRestore'])->name('recycle-bin.bulk-restore');
+Route::post('/recycle-bin/bulk-permanent-delete', [App\Http\Controllers\MLM\MLMUserController::class, 'bulkPermanentDelete'])->name('recycle-bin.bulk-permanent-delete');
 Route::get('/mlm-users/{user}/create-order', [MLMUserController::class, 'showCreateOrder'])
     ->name('mlm-users.create-order');
 Route::post('/mlm-users/create-order', [MLMUserController::class, 'storeOrder'])
