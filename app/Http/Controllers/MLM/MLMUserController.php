@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
+use App\Services\PayoutService;
+use App\Models\PayoutConfig;
+use App\Models\PayoutBalance;
+
 class MLMUserController extends Controller
 {
     public function index()
@@ -32,79 +36,7 @@ class MLMUserController extends Controller
 
         return view('admin.pages.mlm.register-users', compact('users', 'products'));
     }
-
-    public function storeOrder(Request $request)
-    {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:mlm_users,id',
-            'payment_mode' => 'required|in:cash,online,upi',
-            'items' => 'required|array|min:1',
-            'items.*.product_id' => 'required|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $user = MlmUser::findOrFail($validated['user_id']);
-            $totalAmount = 0;
-            $totalCC = 0;
-            $orderItems = [];
-
-            foreach ($validated['items'] as $item) {
-                $product = Product::lockForUpdate()->find($item['product_id']);
-
-                if (!$product) {
-                    throw new \Exception("Product not found");
-                }
-
-                if ($product->stock < $item['quantity']) {
-                    throw new \Exception("Insufficient stock for {$product->name}. Available: {$product->stock}");
-                }
-
-                $price = $product->discount_price ?? $product->price;
-                $subtotal = $price * $item['quantity'];
-                $ccForItem = $product->cc_points * $item['quantity'];
-
-                $totalAmount += $subtotal;
-                $totalCC += $ccForItem;
-
-                $orderItems[] = [
-                    'product_id' => $product->id,
-                    'quantity' => $item['quantity'],
-                    'price' => $price,
-                    'cc_points' => $product->cc_points,
-                    'status' => 'active',
-                ];
-
-                $product->decrement('stock', $item['quantity']);
-            }
-
-            $order = Order::create([
-                'user_id' => $validated['user_id'],
-                'package_id' => null,
-                'order_date' => now(),
-                'total_amount' => $totalAmount,
-                'total_cc_points' => $totalCC,
-                'status' => 'COMPLETED',
-                'order_type' => 'SELF',
-                'refund_policy' => 'WITHIN_30_DAYS',
-                'payment_mode' => $validated['payment_mode'],
-                'note' => "Order created by admin for {$user->user_name}",
-            ]);
-
-            foreach ($orderItems as $itemData) {
-                $order->items()->create($itemData);
-            }
-
-            DB::commit();
-
-            return back()->with('success', "✅ Order created successfully! Order ID: {$order->id} | CC Points: {$totalCC}");
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return back()->withErrors(['error' => $e->getMessage()])->withInput();
-        }
-    }
-
+ 
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -152,39 +84,38 @@ class MLMUserController extends Controller
                 'level' => 0,
             ]);
 
-           try {
-    $activationUrl = route('mlm.activate', ['token' => $mlmUser->verification_token]);
-    
-    // Log before sending
-    Log::info("Preparing to send activation email", [
-        'user' => $mlmUser->user_name,
-        'email' => $mlmUser->email,
-        'token' => substr($mlmUser->verification_token, 0, 10).'...',
-        'url' => $activationUrl,
-    ]);
-    
-    // Send email (sync, not queued)
-    Mail::to($mlmUser->email)->send(new MlmActivationMail($mlmUser, $activationUrl));
-    
-    // Log success
-    Log::info("✅ Activation email SENT successfully", [
-        'user' => $mlmUser->user_name,
-        'email' => $mlmUser->email,
-    ]);
-    
-} catch (\Exception $e) {
-    // Log detailed error
-    Log::error("❌ Activation email FAILED", [
-        'user' => $mlmUser->user_name,
-        'email' => $mlmUser->email,
-        'error' => $e->getMessage(),
-        'trace' => $e->getTraceAsString(),
-    ]);
-    
-    // Don't rollback - user still created, admin can resend later
-    // But add a warning to session
-    session()->flash('email_warning', "User created but activation email failed. Admin can resend from user list.");
-}
+            try {
+                $activationUrl = route('mlm.activate', ['token' => $mlmUser->verification_token]);
+
+                // Log before sending
+                Log::info("Preparing to send activation email", [
+                    'user' => $mlmUser->user_name,
+                    'email' => $mlmUser->email,
+                    'token' => substr($mlmUser->verification_token, 0, 10) . '...',
+                    'url' => $activationUrl,
+                ]);
+
+                // Send email (sync, not queued)
+                Mail::to($mlmUser->email)->send(new MlmActivationMail($mlmUser, $activationUrl));
+
+                // Log success
+                Log::info("✅ Activation email SENT successfully", [
+                    'user' => $mlmUser->user_name,
+                    'email' => $mlmUser->email,
+                ]);
+            } catch (\Exception $e) {
+                // Log detailed error
+                Log::error("❌ Activation email FAILED", [
+                    'user' => $mlmUser->user_name,
+                    'email' => $mlmUser->email,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                // Don't rollback - user still created, admin can resend later
+                // But add a warning to session
+                session()->flash('email_warning', "User created but activation email failed. Admin can resend from user list.");
+            }
 
             DB::commit();
             return redirect()->route('mlm-users.index')
@@ -349,46 +280,7 @@ class MLMUserController extends Controller
         return redirect()->route('mlm-users.index')->with('success', "User soft-deleted: {$mlmUser->user_name}");
     }
 
-    public function resendActivation($id)
-    {
-        try {
-            $mlmUser = MlmUser::findOrFail($id);
-            if ($mlmUser->is_verified) {
-                return response()->json(['success' => false, 'message' => 'User already activated.']);
-            }
-            $mlmUser->update([
-                'verification_token' => Str::random(60),
-                'verification_expires' => now()->addHours(24),
-            ]);
-            $activationUrl = route('mlm.activate', ['token' => $mlmUser->verification_token]);
-            Mail::to($mlmUser->email)->send(new MlmActivationMail($mlmUser, $activationUrl));
-            return response()->json(['success' => true, 'message' => 'Activation email sent.']);
-        } catch (\Exception $e) {
-            Log::error('Resend activation failed', ['error' => $e->getMessage()]);
-            return response()->json(['success' => false, 'message' => 'Failed to send email.'], 500);
-        }
-    }
-
-    public function activate(Request $request, $token)
-    {
-        $user = MlmUser::where('verification_token', $token)
-            ->where('verification_expires', '>', now())
-            ->first();
-
-        if (!$user) {
-            return view('admin.pages.mlm.activation-error', ['message' => 'Invalid or expired activation link. Please contact admin.']);
-        }
-
-        $user->update([
-            'is_verified' => true,
-            'is_active' => true,
-            'verification_token' => null,
-            'verification_expires' => null,
-        ]);
-
-        return view('admin.pages.mlm.activation-success', ['userName' => $user->user_name, 'email' => $user->email]);
-    }
-
+  
     public function recycleBin()
     {
         $deletedUsers = MlmUser::with(['sponsor'])
@@ -457,8 +349,5 @@ class MLMUserController extends Controller
         return redirect()->back()->with('success', "🗑️ {$count} user(s) permanently deleted");
     }
 
-    public static function getCommissionAmount(int $percentage): float
-    {
-        return ($percentage === 20) ? 200.00 : 100.00;
-    }
+  
 }

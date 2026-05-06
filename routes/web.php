@@ -114,6 +114,11 @@ use App\Http\Controllers\ServicesSectionController;
 use App\Http\Controllers\CountersSectionController;
 use App\Http\Controllers\MLM\RegistrationController;
 use App\Http\Controllers\MLM\MLMUserController;
+
+use App\Http\Controllers\MLM\MLMOrderController;
+use App\Http\Controllers\MLM\CCSettingController;
+use App\Http\Controllers\MLM\MLMPayoutController;
+
 use App\Http\Controllers\MLM\TeamGenealogyController;
 
 Route::get('/', function () {
@@ -133,25 +138,25 @@ Route::get('/dashboard', function () {
 
 Route::middleware('auth')->group(function () {
 
-   // ────────────── Product Details ──────────────
-       Route::get('/product-category', [ProductCategoryController::class, 'index'])->name('product-categories.index');
-     // Store
+    // ────────────── Product Details ──────────────
+    Route::get('/product-category', [ProductCategoryController::class, 'index'])->name('product-categories.index');
+    // Store
     Route::post('/product-categories', [ProductCategoryController::class, 'store'])
         ->name('product-categories.store');
-    
+
     // Update
     Route::put('/product-categories/{category}', [ProductCategoryController::class, 'update'])
         ->name('product-categories.update');
-    
+
     // Destroy
     Route::delete('/product-categories/{category}', [ProductCategoryController::class, 'destroy'])
         ->name('product-categories.destroy');
 
-        Route::resource('products', ProductController::class);
+    Route::resource('products', ProductController::class);
     Route::delete('products/{product}/remove-image', [ProductController::class, 'removeImage'])
         ->name('products.remove-image');
-        Route::put('/products/{product}/update-cc', [ProductController::class, 'updateCC'])
-    ->name('products.update-cc');
+    Route::put('/products/{product}/update-cc', [ProductController::class, 'updateCC'])
+        ->name('products.update-cc');
 
     // ────────────── Tests Details ──────────────
     Route::get('/tests', [TestController::class, 'index'])->name('admin.pages.test');
@@ -660,8 +665,8 @@ Route::middleware('auth')->group(function () {
     // For Services
     Route::get('/services', [ServicesSectionController::class, 'index'])->name('services.index');
     Route::put('/services/{section}', [ServicesSectionController::class, 'update'])->name('services.update');
-   Route::get('/counters-section', [CountersSectionController::class, 'index'])->name('counters-section.index');
-Route::put('/counters-section/{section}', [CountersSectionController::class, 'update'])->name('counters-section.update');
+    Route::get('/counters-section', [CountersSectionController::class, 'index'])->name('counters-section.index');
+    Route::put('/counters-section/{section}', [CountersSectionController::class, 'update'])->name('counters-section.update');
     // For Values Sction
     Route::get('/value', [ValueController::class, 'index'])->name('value.index');
     Route::put('/value/{section}', [ValueController::class, 'update'])->name('value.update');
@@ -893,43 +898,53 @@ Route::put('/counters-section/{section}', [CountersSectionController::class, 'up
 
 
 
-
-
-
-
-
-// ✅ Simple MLM Routes - All logic in controller
+// 👥 MLM Users - Simple CRUD
 Route::get('/mlm-users', [MLMUserController::class, 'index'])->name('mlm-users.index');
 Route::post('/mlm-users', [MLMUserController::class, 'store'])->name('mlm-users.store');
 Route::put('/mlm-users/{id}', [MLMUserController::class, 'update'])->name('mlm-users.update');
 Route::delete('/mlm-users/{id}', [MLMUserController::class, 'destroy'])->name('mlm-users.destroy');
+
+// ✉️ Activation
+Route::get('/activate/{token}', [MLMUserController::class, 'activate'])->name('mlm.activate');
 Route::post('/mlm-users/{id}/resend-activation', [MLMUserController::class, 'resendActivation'])->name('mlm-users.resend-activation');
+
+// 🌳 Holding Tank & Tree Placement
 Route::get('/holding-tank', [MLMUserController::class, 'holdingTank'])->name('holding-tank');
 Route::post('/holding-tank/place', [MLMUserController::class, 'placeUser'])->name('holding-tank.place');
-// ✅ Activation Route - Handled by controller method
-Route::get('/activate/{token}', [MLMUserController::class, 'activate'])->name('mlm.activate');
 
-Route::get('/team-genealogy', [TeamGenealogyController::class, 'index'])
-    ->name('team-genealogy.index');
-    
-Route::get('/team-genealogy/user/{userId}', [TeamGenealogyController::class, 'userProfile'])
-    ->name('team-genealogy.profile');
+// 📦 Orders (MLMOrderController)
+Route::get('/mlm-users/{user}/create-order', [MLMOrderController::class, 'create'])->name('mlm-users.create-order');
+Route::post('/mlm-users/create-order', [MLMOrderController::class, 'store'])->name('mlm-users.store-order');
 
-// ✅ GET Route (Keep only ONE)
-Route::get('/recycle-bin', [App\Http\Controllers\MLM\MLMUserController::class, 'recycleBin'])->name('recycle-bin');
 
-// ✅ POST Routes (Add these below it)
-Route::post('/recycle-bin/{id}/restore', [App\Http\Controllers\MLM\MLMUserController::class, 'restore'])->name('recycle-bin.restore');
-Route::post('/recycle-bin/{id}/permanent', [App\Http\Controllers\MLM\MLMUserController::class, 'permanentDelete'])->name('recycle-bin.permanent');
+// 💰 Payouts - ✅ FIXED: Point to MLMPayoutController
+Route::get('/mlm-users/payout', [MLMPayoutController::class, 'dashboard'])->name('mlm-users.payout');
+Route::get('/mlm-users/payout/{userId}', [MLMPayoutController::class, 'details'])->name('mlm-users.payout.details');
+Route::post('/mlm-users/withdraw', [MLMPayoutController::class, 'withdraw'])->name('mlm-users.withdraw');
+Route::post('/mlm-users/withdrawal/{transactionId}/{action}', [MLMPayoutController::class, 'approveWithdrawal'])->name('mlm-users.withdrawal.approve');
 
-Route::post('/recycle-bin/bulk-restore', [App\Http\Controllers\MLM\MLMUserController::class, 'bulkRestore'])->name('recycle-bin.bulk-restore');
-Route::post('/recycle-bin/bulk-permanent-delete', [App\Http\Controllers\MLM\MLMUserController::class, 'bulkPermanentDelete'])->name('recycle-bin.bulk-permanent-delete');
-Route::get('/mlm-users/{user}/create-order', [MLMUserController::class, 'showCreateOrder'])
-    ->name('mlm-users.create-order');
-Route::post('/mlm-users/create-order', [MLMUserController::class, 'storeOrder'])
-    ->name('mlm-users.store-order');
-Route::get('/api/products/list', [ProductController::class, 'getProductsList'])
-    ->name('api.products.list');
+// 💸 Withdrawals
+Route::post('/mlm-users/withdraw', [MLMUserController::class, 'processWithdrawal'])->name('mlm-users.withdraw');
+Route::post('/mlm-users/withdrawal/{transactionId}/{action}', [MLMUserController::class, 'approveWithdrawal'])->name('mlm-users.withdrawal.approve');
+
+// 🗑️ Recycle Bin
+Route::get('/recycle-bin', [MLMUserController::class, 'recycleBin'])->name('recycle-bin');
+Route::post('/recycle-bin/{id}/restore', [MLMUserController::class, 'restore'])->name('recycle-bin.restore');
+Route::post('/recycle-bin/{id}/permanent', [MLMUserController::class, 'permanentDelete'])->name('recycle-bin.permanent');
+Route::post('/recycle-bin/bulk-restore', [MLMUserController::class, 'bulkRestore'])->name('recycle-bin.bulk-restore');
+Route::post('/recycle-bin/bulk-permanent-delete', [MLMUserController::class, 'bulkPermanentDelete'])->name('recycle-bin.bulk-permanent-delete');
+
+// 🧬 Team Genealogy
+Route::get('/team-genealogy', [TeamGenealogyController::class, 'index'])->name('team-genealogy.index');
+Route::get('/team-genealogy/user/{userId}', [TeamGenealogyController::class, 'userProfile'])->name('team-genealogy.profile');
+
+// 📦 Products API
+Route::get('/api/products/list', [ProductController::class, 'getProductsList'])->name('api.products.list');
+
+// ⚙️ CC Settings
+Route::get('/cc-settings', [CCSettingController::class, 'index'])->name('cc-settings.index');
+Route::put('/cc-settings/{ccSetting}', [CCSettingController::class, 'update'])->name('cc-settings.update');
+Route::delete('/cc-settings/{ccSetting}', [CCSettingController::class, 'destroy'])->name('cc-settings.destroy');
 });
 
 

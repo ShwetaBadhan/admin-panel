@@ -86,5 +86,13 @@ class MlmUser extends Model
 {
     return $this->hasOne(UserCommissionSetting::class, 'mlm_user_id');
 }
+public function payoutBalance()
+{
+    return $this->hasOne(\App\Models\PayoutBalance::class, 'mlm_user_id');
+}
 
+public function payoutTransactions()
+{
+    return $this->hasMany(\App\Models\PayoutTransaction::class, 'mlm_user_id');
+}
 }

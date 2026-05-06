@@ -102,7 +102,7 @@
                 <div class="modal-body pt-2">
                     <div class="mb-3">
                         <label class="form-label fw-bold">Placement Parent</label>
-                        <select name="parent_id" class="form-select" required>
+                        <select name="parent_id" class="select" required>
                             <option value="">Select Parent</option>
                             @foreach($parents as $p)
                                 @if($p->id != $item->mlmUser->id)
@@ -116,7 +116,7 @@
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold">Position</label>
-                        <select name="position" class="form-select" required>
+                        <select name="position" class="select" required>
                             <option value="left">LEFT</option>
                             <option value="right">RIGHT</option>
                         </select>

@@ -21,20 +21,49 @@
                 </div>
             </div>
 
-            <!-- Alerts -->
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show">
-                    <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+          <!-- ✅ Unified Alerts Section - ALL messages show here -->
+@if (session('success') || session('error') || session('email_warning') || $errors->any())
+    <div class="alert-container mb-3">
+        
+        {{-- Success Message --}}
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
 
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
+        {{-- Email Warning (Special Case) --}}
+        @if (session('email_warning'))
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('email_warning') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        {{-- General Error --}}
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        {{-- Validation Errors Summary --}}
+        @if ($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <h6 class="mb-2"><i class="bi bi-exclamation-octagon-fill me-2"></i>Validation Errors:</h6>
+                <ul class="mb-0 small">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+    </div>
+@endif
 
             <!-- Table -->
             <div class="row">
@@ -203,7 +232,7 @@
                                                                 <label class="form-label fw-bold">Commission % <span
                                                                         class="text-danger">*</span></label>
                                                                 <select name="commission_percentage"
-                                                                    class="form-select @error('commission_percentage') is-invalid @enderror"
+                                                                    class="select @error('commission_percentage') is-invalid @enderror"
                                                                     required>
                                                                     @foreach ([10, 12, 14, 16, 18, 20] as $percent)
                                                                         @php
@@ -316,17 +345,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            <h6 class="mb-2">Validation Errors:</h6>
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
+                  
 
                     <form action="{{ route('mlm-users.store') }}" method="POST" id="mlmRegisterForm" novalidate>
                         @csrf
@@ -391,8 +410,7 @@
                             <!-- Commission Percentage -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Commission % <span class="text-danger">*</span></label>
-                                <select name="commission_percentage"
-                                    class="form-select @error('commission_percentage') is-invalid @enderror" required>
+                                <select name="commission_percentage" class="select @error('commission_percentage') is-invalid @enderror" required>
                                     <option value="">Select Commission</option>
                                     @foreach ([10, 12, 14, 16, 18, 20] as $percent)
                                         @php
@@ -468,7 +486,7 @@
                         @if (isset($products) && $products->count() > 0)
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Select Product</label>
-                                <select name="items[0][product_id]" id="productSelect" class="form-select" required>
+                                <select name="items[0][product_id]" id="productSelect" class="select" required>
                                     <option value="">Choose a product...</option>
                                     @foreach ($products as $p)
                                         <option value="{{ $p->id }}">
@@ -485,7 +503,7 @@
                             </div>
                             <div class="mb-0">
                                 <label class="form-label fw-bold">Payment Mode</label>
-                                <select name="payment_mode" class="form-select" required>
+                                <select name="payment_mode" class="select" required>
                                     <option value="cash">Cash</option>
                                     <option value="online">Online Payment</option>
                                     <option value="upi">UPI</option>
@@ -513,6 +531,33 @@
 @endsection
 
 @push('scripts')
+// ✅ Auto-open modal based on error type
+@php
+    $hasRegisterErrors = $errors->has('sponsor_username') || $errors->has('user_name') || $errors->has('email') || $errors->has('phone') || $errors->has('password');
+    $hasEditErrors = false; // Edit form errors usually don't redirect back with old input
+@endphp
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        
+        // ✅ Open Add User Modal if registration errors exist
+        @if ($hasRegisterErrors || old('sponsor_username') || old('user_name'))
+            const addModal = new bootstrap.Modal(document.getElementById('addUserModal'));
+            addModal.show();
+            
+            // Optional: Scroll to top to see alerts
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        @endif
+
+        // ✅ Optional: Auto-hide alerts after 8 seconds
+        setTimeout(() => {
+            document.querySelectorAll('.alert-dismissible').forEach(alert => {
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                bsAlert.close();
+            });
+        }, 8000);
+    });
+</script>
     <script>
         // Toggle Password
         function togglePwd(fieldId) {

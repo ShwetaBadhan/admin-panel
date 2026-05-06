@@ -26,25 +26,26 @@
                     <li><a class="" href="{{ route('holding-tank') }}" aria-expanded="false">Holding Tank</a></li>
                     <li><a class="" href="{{ route('team-genealogy.index') }}" aria-expanded="false">Team Genealogy</a></li>
                     <li><a class="" href="{{ route('recycle-bin') }}" aria-expanded="false">Recycle Bin</a></li>
-                    {{-- <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Team Genealogy</a></li>
-                    <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Spilling Preferences</a></li> --}}
-
+                  
                 </ul>
             </li>
 
-            {{-- <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
-                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><rect width="20" height="12" x="2" y="6" rx="2"></rect><circle cx="12" cy="12" r="2"></circle><path d="M6 12h.01M18 12h.01"></path></svg>
-                    <span class="nav-text">Financials</span>
+            <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                    <i class="flaticon-381-home"></i>
+                    <span class="nav-text">Payouts</span>
                 </a>
                 <ul aria-expanded="false">
 
-
-                    <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Manage Customers</a></li>
-                    <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Team Genealogy</a></li>
-                    <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Spilling Preferences</a></li>
-
+                    <li>
+    <a  href="{{ route('mlm-users.payout') }}">
+        <i class="fas fa-wallet me-2"></i>
+        <span>Payout Dashboard</span>
+    </a>
+</li>
                 </ul>
-            </li> --}}
+            </li>
+
+           
 
             {{-- CMS --}}
             @canany(['manage-ads', 'manage-blog-categories', 'manage-blogs', 'manage-slider', 'manage-about',
@@ -180,6 +181,9 @@
                         <span class="nav-text">Settings</span>
                     </a>
                     <ul aria-expanded="false">
+                        @can('manage-general-settings')
+                            <li><a href="{{ route('cc-settings.index') }}">CC Points Settings</a></li>
+                        @endcan
                         @can('manage-general-settings')
                             <li><a href="{{ route('general-setting') }}">General Settings</a></li>
                         @endcan
