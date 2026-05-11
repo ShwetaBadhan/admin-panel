@@ -120,6 +120,9 @@ use App\Http\Controllers\MLM\CCSettingController;
 use App\Http\Controllers\MLM\MLMPayoutController;
 
 use App\Http\Controllers\MLM\TeamGenealogyController;
+use App\Http\Controllers\MLM\MLMTreeController;
+use App\Http\Controllers\MLM\ReferralDownlineController;
+use App\Http\Controllers\MLM\WalletController;
 
 Route::get('/', function () {
     return redirect('/admin-panel');
@@ -934,9 +937,25 @@ Route::post('/recycle-bin/{id}/permanent', [MLMUserController::class, 'permanent
 Route::post('/recycle-bin/bulk-restore', [MLMUserController::class, 'bulkRestore'])->name('recycle-bin.bulk-restore');
 Route::post('/recycle-bin/bulk-permanent-delete', [MLMUserController::class, 'bulkPermanentDelete'])->name('recycle-bin.bulk-permanent-delete');
 
-// 🧬 Team Genealogy
-Route::get('/team-genealogy', [TeamGenealogyController::class, 'index'])->name('team-genealogy.index');
+// 🧬 Team Genealogy - Visual Tree View
+Route::get('/team-genealogy', [TeamGenealogyController::class, 'genealogyView'])->name('team-genealogy.index');
 Route::get('/team-genealogy/user/{userId}', [TeamGenealogyController::class, 'userProfile'])->name('team-genealogy.profile');
+
+// 👥 Team Downline - Table View
+Route::get('/team-downline', [TeamGenealogyController::class, 'downlineView'])->name('team-downline.index');
+Route::get('/team-downline/{userId}/genealogy', [TeamGenealogyController::class, 'viewGenealogy'])->name('team-downline.genealogy');
+Route::get('/team-downline/{userId}/referral-tree', [TeamGenealogyController::class, 'viewReferralTree'])->name('team-downline.referral-tree');
+// 👥 Referral Genealogy (Card View)
+Route::get('/referral-genealogy', [MLMTreeController::class, 'referralIndex'])->name('referral-genealogy.index');
+Route::get('/referral-genealogy/user/{userId}', [MLMTreeController::class, 'referralProfile'])->name('referral-genealogy.profile');
+
+Route::get('/referral-downline', [ReferralDownlineController::class, 'index'])->name('referral-downline.index');
+Route::get('/referral-downline/{userId}/genealogy', [ReferralDownlineController::class, 'viewGenealogy'])->name('referral-downline.genealogy');
+Route::get('/referral-downline/{userId}/referral-tree', [ReferralDownlineController::class, 'viewReferralTree'])->name('referral-downline.referral-tree');
+
+
+
+
 
 // 📦 Products API
 Route::get('/api/products/list', [ProductController::class, 'getProductsList'])->name('api.products.list');
@@ -945,6 +964,41 @@ Route::get('/api/products/list', [ProductController::class, 'getProductsList'])-
 Route::get('/cc-settings', [CCSettingController::class, 'index'])->name('cc-settings.index');
 Route::put('/cc-settings/{ccSetting}', [CCSettingController::class, 'update'])->name('cc-settings.update');
 Route::delete('/cc-settings/{ccSetting}', [CCSettingController::class, 'destroy'])->name('cc-settings.destroy');
+
+
+
+// Wallet Management
+Route::resource('wallets', WalletController::class);
+Route::get('/wallets/{wallet}/payout-config', [WalletController::class, 'payoutConfig'])
+    ->name('wallets.payout-config');
+Route::post('/wallets/{wallet}/payout-config', [WalletController::class, 'updatePayoutConfig'])
+    ->name('wallets.update-payout-config');
+Route::get('/wallets/{wallet}/charges', [WalletController::class, 'charges'])
+    ->name('wallets.charges');
+Route::post('/wallets/{wallet}/charges', [WalletController::class, 'updateCharges'])
+    ->name('wallets.update-charges');
+Route::post('/wallets/{wallet}/sync', [WalletController::class, 'syncWallet'])
+    ->name('wallets.sync');
+Route::post('/wallets/{wallet}/assign-user', [WalletController::class, 'assignUser'])
+    ->name('wallets.assign-user');
+Route::delete('/wallets/{wallet}/remove-user', [WalletController::class, 'removeUser'])
+    ->name('wallets.remove-user');
+
+    Route::get('/financial-overview', [WalletController::class, 'financialOverview'])
+    ->name('wallets.financial-overview');
+Route::get('/commission-wallet', [WalletController::class, 'commissionWallet'])
+    ->name('wallets.commission-wallet');
+    Route::get('/purchase-wallet', [WalletController::class, 'purchaseWallet'])
+    ->name('wallets.purchase-wallet');
+
+Route::get('/pending-earnings', [WalletController::class, 'pendingEarnings'])
+    ->name('wallets.pending-earnings');
+    Route::get('/bonus-history', [WalletController::class, 'bonusHistory'])
+    ->name('wallets.bonus-history');
+    Route::get('/cc-logs', [WalletController::class, 'ccLogs'])
+    ->name('wallets.cc-logs');
+    Route::get('/pair-matching-logs', [WalletController::class, 'pairMatchingLogs'])
+    ->name('wallets.pair-matching-logs');
 });
 
 

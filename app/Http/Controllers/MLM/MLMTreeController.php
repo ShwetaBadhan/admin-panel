@@ -5,11 +5,61 @@ use App\Http\Controllers\Controller;
 use App\Models\MlmUser;
 use App\Models\MLMTree;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class MLMTreeController extends Controller
 {
-    public function holdingTank()
+     /**
+     * ✅ Referral Genealogy - Card View (Direct Referrals Only)
+     */
+    public function referralIndex()
+    {
+        $user = Auth::user();
+        if (!$user) return redirect()->route('login');
+
+        // Direct referrals (Level 1 only)
+        $referrals = MlmUser::where('sponsor_id', $user->id)
+            ->where('is_deleted', false)
+            ->with('payoutBalance')
+            ->orderBy('created_at', 'desc')
+            ->paginate(12);
+
+        // Quick stats
+        $stats = [
+            'total' => MlmUser::where('sponsor_id', $user->id)->where('is_deleted', false)->count(),
+            'active' => MlmUser::where('sponsor_id', $user->id)->where('is_active', true)->where('is_deleted', false)->count(),
+            'total_cc' => MlmUser::where('sponsor_id', $user->id)
+                ->where('is_deleted', false)
+                ->withSum('payoutBalance', 'cc_balance')
+                ->get()
+                ->sum('payout_balance_sum_cc_balance'),
+        ];
+
+        return view('admin.pages.mlm.referral-genealogy', compact('referrals', 'stats', 'user'));
+    }
+
+    /**
+     * ✅ User Profile for Modal (AJAX)
+     */
+    public function referralProfile($userId)
+    {
+        $user = MlmUser::with(['sponsor', 'payoutBalance'])->findOrFail($userId);
+        
+        return response()->json([
+            'user' => $user,
+            'stats' => [
+                'joined' => $user->created_at->format('d M Y'),
+                'status' => $user->is_active ? 'Active' : 'Inactive',
+                'cc_balance' => $user->payoutBalance?->cc_balance ?? 0,
+                'available' => $user->payoutBalance?->available_balance ?? 0,
+                'sponsor' => $user->sponsor?->user_name ?? 'Direct',
+            ]
+        ]);
+    }
+
+
+public function holdingTank()
     {
         $holdingUsers = MLMTree::with(['mlmUser.sponsor'])
             ->whereHas('mlmUser', fn($q) => $q->where('is_verified', true)->where('is_active', true))

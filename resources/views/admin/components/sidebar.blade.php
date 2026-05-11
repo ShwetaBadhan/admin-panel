@@ -24,28 +24,115 @@
                     <li><a class="" href="{{ route('mlm-users.index') }}" aria-expanded="false">Manage
                             Customers</a></li>
                     <li><a class="" href="{{ route('holding-tank') }}" aria-expanded="false">Holding Tank</a></li>
-                    <li><a class="" href="{{ route('team-genealogy.index') }}" aria-expanded="false">Team Genealogy</a></li>
+                    <li><a class="" href="{{ route('team-genealogy.index') }}" aria-expanded="false">Team
+                            Genealogy</a></li>
+                    <li><a class="" href="{{ route('referral-genealogy.index') }}" aria-expanded="false">Referral
+                            Genealogy</a></li>
+                    <li><a class="" href="{{ route('referral-downline.index') }}" aria-expanded="false">Referral
+                            Downline</a></li>
+                    <li><a class="" href="{{ route('team-downline.index') }}" aria-expanded="false">Team
+                            Downline</a></li>
+                    {{-- <li><a class="" href="{{ route('team-genealogy.index') }}" aria-expanded="false">Placement
+                            Settings</a></li> --}}
+
                     <li><a class="" href="{{ route('recycle-bin') }}" aria-expanded="false">Recycle Bin</a></li>
-                  
+
                 </ul>
             </li>
 
             <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
                     <i class="flaticon-381-home"></i>
-                    <span class="nav-text">Payouts</span>
+                    <span class="nav-text">Financials</span>
                 </a>
                 <ul aria-expanded="false">
 
                     <li>
-    <a  href="{{ route('mlm-users.payout') }}">
-        <i class="fas fa-wallet me-2"></i>
-        <span>Payout Dashboard</span>
-    </a>
-</li>
+                        <a href="{{ route('wallets.financial-overview') }}">
+                           Financial Overview
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('wallets.commission-wallet') }}">
+                          
+                            <span>Commission Wallet</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('wallets.purchase-wallet') }}">
+                          
+                            <span>Purchase Wallet</span>
+                        </a>
+                    </li>
+                   
+                    <li>
+                        <a href="{{ route('wallets.pending-earnings') }}">
+                          
+                            <span>Pending Earnings</span>
+                        </a>
+                    </li>
+                   
+                    <li>
+                        <a href="{{ route('wallets.bonus-history') }}">
+                          
+                            <span>Bonus History</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('wallets.cc-logs') }}">
+                          
+                            <span>CC Logs</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('wallets.pair-matching-logs') }}">
+                          
+                            <span>Pair Logs</span>
+                        </a>
+                    </li>
                 </ul>
             </li>
 
-           
+
+            <li><a class="has-arrow ai-icon" href="javascript:void()" aria-expanded="false">
+                    <i class="flaticon-381-home"></i>
+                    <span class="nav-text">Wallets & Payouts</span>
+                </a>
+                <ul aria-expanded="false">
+
+                    <li>
+                        <a href="{{ route('mlm-users.payout') }}">
+                          
+                            <span>Payout Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('wallets.index') }}">
+                          
+                            <span>Master Wallet</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('mlm-users.payout') }}">
+                          
+                            <span>Payout Requests</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('mlm-users.payout') }}">
+                          
+                            <span>Payout Preferences</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('mlm-users.payout') }}">
+                          
+                            <span>Compensation Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+
+
 
             {{-- CMS --}}
             @canany(['manage-ads', 'manage-blog-categories', 'manage-blogs', 'manage-slider', 'manage-about',
