@@ -1,5 +1,8 @@
 <?php
 namespace App\Http\Controllers\MLM;
+
+use App\Http\Controllers\Controller;
+
 use App\Models\Wallet;
 use App\Models\WalletConfiguration;
 use App\Models\WalletCharge;

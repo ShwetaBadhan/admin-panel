@@ -937,9 +937,16 @@ Route::post('/recycle-bin/{id}/permanent', [MLMUserController::class, 'permanent
 Route::post('/recycle-bin/bulk-restore', [MLMUserController::class, 'bulkRestore'])->name('recycle-bin.bulk-restore');
 Route::post('/recycle-bin/bulk-permanent-delete', [MLMUserController::class, 'bulkPermanentDelete'])->name('recycle-bin.bulk-permanent-delete');
 
-// 🧬 Team Genealogy - Visual Tree View
+// 🧬 Team Genealogy Routes - Individual definitions
 Route::get('/team-genealogy', [TeamGenealogyController::class, 'genealogyView'])->name('team-genealogy.index');
-Route::get('/team-genealogy/user/{userId}', [TeamGenealogyController::class, 'userProfile'])->name('team-genealogy.profile');
+
+// ✅ ADD /team-genealogy prefix to ALL routes
+Route::get('/team-genealogy/user/{userId}/modal', [TeamGenealogyController::class, 'showProfileModal'])
+    ->name('team-genealogy.user.modal');
+
+Route::get('/team-genealogy/downline/{userId}', [TeamGenealogyController::class, 'showUserDownline'])
+    ->name('team-genealogy.downline');
+
 
 // 👥 Team Downline - Table View
 Route::get('/team-downline', [TeamGenealogyController::class, 'downlineView'])->name('team-downline.index');

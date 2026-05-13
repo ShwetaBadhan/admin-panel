@@ -1,16 +1,18 @@
 {{-- resources/views/admin/pages/mlm/partials/tree-node.blade.php --}}
-
 @php
-    $avatarClass = ($node['user_name'] === 'Founder01' || ($node['is_root'] ?? false)) ? 'avatar-blue' : 'avatar-orange';
+    $avatarClass = ($node['user_name'] === 'Founder01' || ($node['is_root'] ?? false)) 
+        ? 'avatar-blue' 
+        : 'avatar-orange';
     $subtreeId = 'subtree-' . $node['id'];
 @endphp
 
-<div class="user-card" onclick="showUserProfile({{ $node['user_id'] }}, @json($node))">
+<div class="user-card profile-clickable" 
+     data-user-id="{{ $node['user_id'] }}"
+     style="cursor: pointer;">
     <div class="user-avatar {{ $avatarClass }}">
         {{ strtoupper(substr($node['first_name'], 0, 1)) }}{{ strtoupper(substr($node['last_name'], 0, 1)) }}
     </div>
     <div class="user-name">{{ $node['first_name'] }} {{ $node['last_name'] }}</div>
-    {{-- <div class="user-handle">@{{ $node['user_name'] }}</div> --}}
     <div class="status-badge">
         <span class="status-dot"></span>
         {{ $node['is_active'] ? 'Active' : 'Inactive' }}
@@ -19,10 +21,13 @@
 
 @if($node['left'] || $node['right'])
 <div class="connector-vertical"></div>
-<div class="expand-btn" onclick="toggleSubtree(this, '{{ $subtreeId }}')">
+<div class="expand-btn subtree-toggle" 
+     data-target="{{ $subtreeId }}"
+     style="cursor: pointer;">
     <i class="fas fa-chevron-down"></i>
 </div>
 
+{{-- ❌ NO "show" class - initially hidden --}}
 <div id="{{ $subtreeId }}" class="subtree">
     <div class="tree-level">
         <div class="tree-node-wrapper">
