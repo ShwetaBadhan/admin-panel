@@ -112,19 +112,19 @@
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('mlm-users.payout') }}">
+                        <a href="javascript:void(0)">
                           
                             <span>Payout Requests</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('mlm-users.payout') }}">
+                        <a href="javascript:void(0)">
                           
                             <span>Payout Preferences</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('mlm-users.payout') }}">
+                        <a href="javascript:void(0)">
                           
                             <span>Compensation Settings</span>
                         </a>
