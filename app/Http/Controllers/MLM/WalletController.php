@@ -14,13 +14,14 @@ class WalletController extends Controller
     /**
      * Display wallet list
      */
+    
     public function index()
     {
         $wallets = Wallet::with(['configuration', 'charges'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         
-        return view('admin.wallets.index', compact('wallets'));
+        return view('admin.pages.mlm.wallets.index', compact('wallets'));
     }
     
     /**

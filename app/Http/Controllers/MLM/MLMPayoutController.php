@@ -16,7 +16,15 @@ public function dashboard(Request $request)
 {
     $config = \App\Models\PayoutConfig::first();
     
-    // ✅ Variable name: $usersWithPayouts
+    // ✅ Fallback if no config exists in DB
+    if (!$config) {
+        $config = new \App\Models\PayoutConfig([
+            'products_for_payout' => 40,
+            'threshold_cc' => 800,
+            'cc_to_currency_rate' => 60,
+        ]);
+    }
+    
     $usersWithPayouts = MlmUser::with(['payoutBalance', 'sponsor'])
         ->where('is_deleted', false)
         ->whereHas('payoutBalance', fn($qb) => 
@@ -26,11 +34,7 @@ public function dashboard(Request $request)
         )
         ->orderBy('created_at', 'desc')
         ->paginate(20);
-Log::info('Payout Dashboard Variables:', [
-    'config' => $config ? 'exists' : 'null',
-    'usersWithPayouts' => isset($usersWithPayouts) ? 'exists' : 'null',
-]);
-    // ✅ Compact mein SAME naam use karo
+    
     return view('admin.pages.mlm.payout-dashboard', compact('config', 'usersWithPayouts'));
 }
 

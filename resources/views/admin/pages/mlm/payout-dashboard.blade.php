@@ -11,20 +11,20 @@
             </ol>
         </div>
 
-        <!-- Config Banner -->
-        @php $config = \App\Models\PayoutConfig::first(); @endphp
+        <!-- Config Banner - FIXED: Using controller-passed $config with null-safe access -->
         <div class="alert alert-info mb-4">
             <i class="fas fa-info-circle me-2"></i>
             <strong>Payout Rules:</strong> 
-            {{ $config->products_for_payout ?? 40 }} products = {{ $config->getThresholdCC() ?? 800 }} CC | 
-            1 CC = ₹{{ number_format($config->cc_to_currency_rate ?? 60, 2) }}
+            {{ $config?->products_for_payout ?? 40 }} products = 
+            {{ $config?->getThresholdCC() ?? 800 }} CC | 
+            1 CC = ₹{{ number_format($config?->cc_to_currency_rate ?? 60, 2) }}
         </div>
 
         <!-- Users Table -->
         <div class="card">
             <div class="card-header bg-white d-flex justify-content-between align-items-center">
                 <h5 class="card-title mb-0"><i class="fas fa-users me-2"></i>Users with Payout Activity</h5>
-                <span class="badge bg-primary">{{ $usersWithPayouts->total() }} Users</span>
+                <span class="badge bg-primary">{{ $usersWithPayouts->total() ?? 0 }} Users</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -39,19 +39,29 @@
                             @forelse($usersWithPayouts as $user)
                                 @php
                                     $balance = $user->payoutBalance;
-                                    $ccValue = ($balance->cc_balance ?? 0) * ($config->cc_to_currency_rate ?? 60);
+                                    // Safe config values with fallbacks
+                                    $ccRate = $config?->cc_to_currency_rate ?? 60;
+                                    $ccBalance = $balance?->cc_balance ?? 0;
+                                    $ccValue = $ccBalance * $ccRate;
                                 @endphp
                                 <tr>
                                     <td>
-                                        <strong>{{ $user->first_name }} {{ $user->last_name }}</strong><br>
-                                        <small class="text-muted">@{{ $user->user_name }}</small>
+                                        <strong>{{ $user->first_name ?? '' }} {{ $user->last_name ?? '' }}</strong><br>
+                                        <small class="text-muted">@{{ $user->user_name ?? 'N/A' }}</small>
                                     </td>
                                     <td>{{ $user->sponsor?->user_name ?? 'ROOT' }}</td>
-                                    <td>{{ number_format($balance->cc_balance ?? 0) }} CC<br><small>≈ ₹{{ number_format($ccValue, 2) }}</small></td>
-                                    <td class="text-success">₹{{ number_format($balance->available_balance ?? 0, 2) }}</td>
-                                    <td>₹{{ number_format($balance->total_earned ?? 0, 2) }}</td>
                                     <td>
-                                        @if($balance->is_payout_eligible)
+                                        {{ number_format($ccBalance) }} CC<br>
+                                        <small>≈ ₹{{ number_format($ccValue, 2) }}</small>
+                                    </td>
+                                    <td class="text-success">
+                                        ₹{{ number_format($balance?->available_balance ?? 0, 2) }}
+                                    </td>
+                                    <td>
+                                        ₹{{ number_format($balance?->total_earned ?? 0, 2) }}
+                                    </td>
+                                    <td>
+                                        @if($balance?->is_payout_eligible)
                                             <span class="badge bg-success">Eligible</span>
                                         @else
                                             <span class="badge bg-warning">Pending</span>
@@ -69,19 +79,19 @@
                         </tbody>
                     </table>
                 </div>
-                <div class="p-3">{{ $usersWithPayouts->links() }}</div>
+                <div class="p-3">{{ $usersWithPayouts?->links() ?? '' }}</div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Details Modal -->
-<div class="modal fade" id="payoutModal" tabindex="-1">
+<div class="modal fade" id="payoutModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title">Payout Details</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="payoutBody"></div>
             <div class="modal-footer">
@@ -93,7 +103,7 @@
 </div>
 
 <!-- Withdraw Modal -->
-<div class="modal fade" id="withdrawModal" tabindex="-1">
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <form action="{{ route('mlm-users.withdraw') }}" method="POST">
             @csrf
@@ -101,20 +111,20 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Withdraw</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-info">
-                        Available: ₹<span id="wAvailable"></span>
+                        Available: ₹<span id="wAvailable">0.00</span>
                     </div>
                     <div class="mb-3">
-                        <label>Amount</label>
-                        <input type="number" name="amount" class="form-control" step="0.01" required>
+                        <label class="form-label">Amount</label>
+                        <input type="number" name="amount" class="form-control" step="0.01" min="1" required>
                     </div>
                     <div class="mb-3">
-                        <label>Method</label>
+                        <label class="form-label">Method</label>
                         <select name="method" class="form-select" required>
-                            <option value="bank">Bank</option>
+                            <option value="bank">Bank Transfer</option>
                             <option value="upi">UPI</option>
                             <option value="wallet">Wallet</option>
                         </select>
@@ -122,7 +132,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-success">Submit</button>
+                    <button type="submit" class="btn btn-success">Submit Request</button>
                 </div>
             </div>
         </form>
@@ -133,39 +143,59 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // Initialize Bootstrap modal instance (once)
+    // Safe config injection from Blade with complete fallbacks
+    const cfg = {{ $config ? json_encode([
+        'cc_to_currency_rate' => $config->cc_to_currency_rate ?? 60,
+        'products_for_payout' => $config->products_for_payout ?? 40,
+        'threshold_cc' => $config->getThresholdCC() ?? 800
+    ]) : json_encode([
+        'cc_to_currency_rate' => 60,
+        'products_for_payout' => 40,
+        'threshold_cc' => 800
+    ]) }};
+
+    // Initialize Bootstrap modal instance safely
     const payoutModalEl = document.getElementById('payoutModal');
-    const payoutModal = bootstrap.Modal.getOrCreateInstance(payoutModalEl);
+    const payoutModal = payoutModalEl ? (bootstrap.Modal?.getOrCreateInstance?.(payoutModalEl) || new bootstrap.Modal(payoutModalEl)) : null;
     
+    // Format currency helper
+    const fmt = (n) => {
+        const num = parseFloat(n) || 0;
+        return num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
     // View button click handler
     document.querySelectorAll('.view-payout').forEach(btn => {
-        btn.onclick = async () => {
+        btn.onclick = async (e) => {
+            e.preventDefault();
             const id = btn.dataset.id;
             const body = document.getElementById('payoutBody');
             const wBtn = document.getElementById('withdrawBtn');
             
             // Show loading state
             body.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Loading...</p></div>';
-            wBtn.classList.add('d-none');
+            if (wBtn) wBtn.classList.add('d-none');
             
             try {
-                const res = await fetch(`/mlm-users/payout/${id}`);
+                const res = await fetch(`/mlm-users/payout/${id}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
                 
                 if (!res.ok) {
-                    const err = await res.text();
-                    throw new Error(`Server error: ${res.status} - ${err.substring(0,100)}`);
+                    const errText = await res.text().catch(() => 'Unknown error');
+                    throw new Error(`Server error: ${res.status} - ${errText.substring(0, 150)}`);
                 }
                 
                 const data = await res.json();
                 
-                if (!data.summary) throw new Error('No payout data found');
+                if (!data?.summary) throw new Error('No payout data found');
                 
                 const s = data.summary;
-                const cfg = @json($config ?? ['cc_to_currency_rate' => 60]);
-                const fmt = n => (parseFloat(n) || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 });
                 
-                // Build modal content
+                // Build modal content with safe null checks
                 body.innerHTML = `
                     <div class="row g-3">
                         <div class="col-4 text-center">
@@ -204,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <label class="fw-bold">Eligibility Progress</label>
                         <div class="progress" style="height: 8px;">
                             <div class="progress-bar ${s.is_eligible ? 'bg-success' : 'bg-warning'}" 
-                                 style="width: ${s.progress_percent || 0}%"></div>
+                                 style="width: ${Math.min(100, Math.max(0, s.progress_percent || 0))}%"></div>
                         </div>
                         <small class="text-muted mt-1 d-block">
                             ${s.products_needed || 0} more products to unlock payouts
@@ -222,11 +252,11 @@ document.addEventListener('DOMContentLoaded', () => {
                                 ${(data.transactions || []).length > 0 
                                     ? data.transactions.map(t => `
                                         <tr>
-                                            <td><small>${new Date(t.created_at).toLocaleDateString()}</small></td>
-                                            <td><span class="badge bg-${t.type === 'direct_income' ? 'success' : 'info'}">${t.type.replace('_', ' ')}</span></td>
+                                            <td><small>${t.created_at ? new Date(t.created_at).toLocaleDateString() : 'N/A'}</small></td>
+                                            <td><span class="badge bg-${t.type === 'direct_income' ? 'success' : 'info'}">${(t.type || '').replace('_', ' ')}</span></td>
                                             <td>${t.cc_amount || 0}</td>
                                             <td>₹${fmt(t.currency_amount)}</td>
-                                            <td><span class="badge bg-${t.status === 'credited' ? 'success' : 'secondary'}">${t.status}</span></td>
+                                            <td><span class="badge bg-${t.status === 'credited' ? 'success' : 'secondary'}">${t.status || 'pending'}</span></td>
                                         </tr>
                                     `).join('')
                                     : '<tr><td colspan="5" class="text-center text-muted py-3">No transactions yet</td></tr>'
@@ -236,37 +266,43 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
                 
-                // ✅ Show withdraw button if eligible
-                if (s.is_eligible && s.available_balance > 0) {
+                // Show withdraw button if eligible and has balance
+                if (wBtn && s.is_eligible && (s.available_balance || 0) > 0) {
                     wBtn.classList.remove('d-none');
-                    document.getElementById('wUserId').value = data.user.id;
-                    document.getElementById('wAvailable').textContent = fmt(s.available_balance);
+                    const wUserId = document.getElementById('wUserId');
+                    const wAvailable = document.getElementById('wAvailable');
+                    if (wUserId && data?.user?.id) wUserId.value = data.user.id;
+                    if (wAvailable) wAvailable.textContent = fmt(s.available_balance);
                 }
                 
-                // ✅ SHOW THE MODAL (This was missing!)
-                payoutModal.show();
+                // Show the modal
+                if (payoutModal) payoutModal.show();
                 
             } catch (e) {
                 console.error('❌ Modal error:', e);
                 body.innerHTML = `
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle me-2"></i>
-                        <strong>Error:</strong> ${e.message}
+                        <strong>Error:</strong> ${e.message || 'Something went wrong'}
                         <button class="btn btn-sm btn-primary mt-2" onclick="location.reload()">
                             <i class="fas fa-redo me-1"></i>Retry
                         </button>
                     </div>
                 `;
-                payoutModal.show(); // Show modal even with error so user sees message
+                if (payoutModal) payoutModal.show();
             }
         };
     });
     
-    // Optional: Reset modal on close
-    payoutModalEl?.addEventListener('hidden.bs.modal', () => {
-        document.getElementById('payoutBody').innerHTML = '';
-        document.getElementById('withdrawBtn').classList.add('d-none');
-    });
+    // Reset modal on close
+    if (payoutModalEl) {
+        payoutModalEl.addEventListener('hidden.bs.modal', () => {
+            const body = document.getElementById('payoutBody');
+            const wBtn = document.getElementById('withdrawBtn');
+            if (body) body.innerHTML = '';
+            if (wBtn) wBtn.classList.add('d-none');
+        });
+    }
 });
 </script>
 @endpush
