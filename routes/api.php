@@ -37,6 +37,11 @@ use App\Http\Controllers\Api\FundSummaryApiController;
 use App\Http\Controllers\Api\FundRequestApiController;
 
 use App\Http\Controllers\Api\FundTransferApiController;
+use App\Http\Controllers\Api\WalletApiController;
+use App\Http\Controllers\Api\DirectIncomeApiController;
+use App\Http\Controllers\Api\AccountSummaryApiController;
+use App\Http\Controllers\Api\MatchingIncomeApiController;
+use App\Http\Controllers\Api\WalletIncomeApiController;
 
 
 Route::get('/ping', function () {
@@ -109,3 +114,44 @@ Route::post('/fund-transfer/transfer', [FundTransferApiController::class, 'trans
 Route::get('/fund-transfer/sent', [FundTransferApiController::class, 'getSentTransfers']);
 Route::get('/fund-transfer/received', [FundTransferApiController::class, 'getReceivedTransfers']);
 Route::get('/fund-transfer/wallet-balance', [FundTransferApiController::class, 'getWalletBalance']);
+
+// Route::get('/wallets', [WalletApiController::class, 'getWallets']);
+// Route::get('/wallet/transactions', [WalletApiController::class, 'getTransactions']);
+// Route::post('/wallet/transactions', [WalletApiController::class, 'createTransaction']);
+// Route::get('/direct-income', [DirectIncomeApiController::class, 'index']);
+// Route::get('/account-summary', [AccountSummaryApiController::class, 'index']);
+// Route::get('/matching-income', [MatchingIncomeApiController::class, 'index']);
+// ============================================
+// Unified Wallet & Income APIs
+// ============================================
+
+// Wallets
+Route::get('/wallets', [WalletIncomeApiController::class, 'getWallets']);
+Route::get('/wallet/transactions', [WalletIncomeApiController::class, 'getWalletTransactions']);
+
+// Income Types
+Route::get('/direct-income', [WalletIncomeApiController::class, 'getDirectIncome']);
+Route::get('/matching-income', [WalletIncomeApiController::class, 'getMatchingIncome']);
+Route::get('/generation-income', [WalletIncomeApiController::class, 'getGenerationIncome']);
+
+// Account Summary
+Route::get('/account-summary', [WalletIncomeApiController::class, 'getAccountSummary']);
+
+// Cash Bonus & Awards
+Route::get('/cash-bonus-request', [WalletIncomeApiController::class, 'getCashBonusRequests']);
+Route::get('/claim-cash-request', [WalletIncomeApiController::class, 'getClaimCashRequests']);
+Route::get('/cash-bonus-history', [WalletIncomeApiController::class, 'getCashBonusHistory']);
+Route::get('/awards-rewards', [WalletIncomeApiController::class, 'getAwardsRewards']);
+
+// Downline Rank, Weekly Payout, Retreat Tours
+Route::get('/downline-rank', [WalletIncomeApiController::class, 'getDownlineRank']);
+Route::get('/weekly-payout', [WalletIncomeApiController::class, 'getWeeklyPayout']);
+Route::get('/retreat-tours', [WalletIncomeApiController::class, 'getRetreatTours']);
+
+// Order & Delivery APIs
+Route::get('/order-history', [WalletIncomeApiController::class, 'getOrderHistory']);
+Route::get('/by-hand-delivery', [WalletIncomeApiController::class, 'getByHandDelivery']);
+Route::get('/courier-delivery', [WalletIncomeApiController::class, 'getCourierDelivery']);
+Route::get('/by-hand-award', [WalletIncomeApiController::class, 'getByHandAward']);
+Route::get('/by-courier-award', [WalletIncomeApiController::class, 'getByCourierAward']);
+Route::get('/other-products', [WalletIncomeApiController::class, 'getOtherProducts']);
